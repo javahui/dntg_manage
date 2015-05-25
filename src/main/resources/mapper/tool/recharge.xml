@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="recharge">
+	
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select
+			id,
+			player_account as playerAccount,
+			player_name as playerName,
+			money,
+			money_type as moneyType,
+			money_num as moneyNum,
+			server_id as serverId,
+			(select server_name from game_server where server_id = recharge.server_id) as serverName,
+			recharge_type as rechargeType,
+			create_time as createTime,
+			user_name as userName,
+			create_by as createBy,
+			is_audit as isAudit,
+			auditor,
+			content
+		from recharge
+		where is_audit != 10
+		<if test="@Ognl@isNotBlank(isAudit)">and is_audit = #{isAudit}</if> 
+		<if test="@Ognl@isNotBlank(playerName)">and player_name like concat('%',#{playerName},'%') </if> 
+		<if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId} </if> 
+		<if test="@Ognl@isNotBlank(rechargeType)">and recharge_type = #{rechargeType} </if> 
+		<if test="@Ognl@isNotBlank(moneyType)">and money_type = #{moneyType} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">and  create_time <![CDATA[ >= ]]> #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and create_time <![CDATA[ <= ]]> #{endTime}  </if>
+		<if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+		order by create_time desc	
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1) from recharge where is_audit != 10
+		<if test="@Ognl@isNotBlank(isAudit)">and is_audit = #{isAudit}</if> 
+		<if test="@Ognl@isNotBlank(playerName)">and player_name like concat('%',#{playerName},'%') </if> 
+		<if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId} </if> 
+		<if test="@Ognl@isNotBlank(rechargeType)">and recharge_type = #{rechargeType} </if> 
+		<if test="@Ognl@isNotBlank(moneyType)">and money_type = #{moneyType} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">and  create_time <![CDATA[ >= ]]> #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and create_time <![CDATA[ <= ]]> #{endTime}  </if>
+		<if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+	</select>
+	
+	<select id="indexAudit" parameterType="hashmap" resultType="hashmap">
+		select
+			id
+			,player_account as playerAccount
+			,player_name as playerName
+			,money
+			,money_type as moneyType
+			,money_num as moneyNum
+			,server_id as serverId
+			,(select server_name from game_server where server_id = recharge.server_id) as serverName
+			,recharge_type as rechargeType
+			,create_time as createTime
+			,user_name as userName
+			,is_audit as isAudit
+			,auditor
+			,content
+			,fail_reason as failReason
+		from recharge
+		where is_audit in(0,2)
+		<if test="@Ognl@isNotBlank(playerName)">and player_name like concat('%',#{playerName},'%') </if> 
+		<if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId} </if> 
+		<if test="@Ognl@isNotBlank(rechargeType)">and recharge_type = #{rechargeType} </if> 
+		<if test="@Ognl@isNotBlank(moneyType)">and money_type = #{moneyType} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">and  create_time <![CDATA[ >= ]]> #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and create_time <![CDATA[ <= ]]> #{endTime}  </if>
+		<if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+		order by create_time desc
+	</select>
+	<select id="indexAuditCount" parameterType="hashmap" resultType="int">
+		select count(1) from recharge where is_audit in (0,2)
+		<if test="@Ognl@isNotBlank(playerName)">and player_name like concat('%',#{playerName},'%') </if> 
+		<if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId} </if> 
+		<if test="@Ognl@isNotBlank(rechargeType)">and recharge_type = #{rechargeType} </if> 
+		<if test="@Ognl@isNotBlank(moneyType)">and money_type = #{moneyType} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">and  create_time <![CDATA[ >= ]]> #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and create_time <![CDATA[ <= ]]> #{endTime}  </if>
+		<if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+	</select>
+	
+	<select id="indexDirect" parameterType="hashmap" resultType="hashmap">
+		select
+			id
+			,player_account as playerAccount
+			,player_name as playerName
+			,money
+			,money_type as moneyType
+			,money_num as moneyNum
+			,server_id as serverId
+			,(select server_name from game_server where server_id = recharge.server_id) as serverName
+			,recharge_type as rechargeType
+			,create_time as createTime
+			,user_name as userName
+			,is_audit as isAudit
+			,auditor
+			,content
+		from recharge
+		where is_audit =10
+		<if test="@Ognl@isNotBlank(playerName)">and player_name like concat('%',#{playerName},'%') </if> 
+		<if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId} </if> 
+		<if test="@Ognl@isNotBlank(rechargeType)">and recharge_type = #{rechargeType} </if> 
+		<if test="@Ognl@isNotBlank(moneyType)">and money_type = #{moneyType} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">and create_time <![CDATA[ >= ]]> #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and create_time <![CDATA[ <= ]]> #{endTime}  </if>
+		<if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+		order by create_time desc
+	</select>
+	<select id="indexDirectCount" parameterType="hashmap" resultType="int">
+		select count(1) from recharge where is_audit =10
+		<if test="@Ognl@isNotBlank(playerName)">and player_name like concat('%',#{playerName},'%') </if> 
+		<if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId} </if> 
+		<if test="@Ognl@isNotBlank(rechargeType)">and recharge_type = #{rechargeType} </if> 
+		<if test="@Ognl@isNotBlank(moneyType)">and money_type = #{moneyType} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">and  create_time <![CDATA[ >= ]]> #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and create_time <![CDATA[ <= ]]> #{endTime}  </if>
+		<if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+	</select>
+	
+	<!-- 得到所有没有审核和失败的记录 -->
+	<select id="getUnauditByIds" resultType="com.lingyu.dntg.bean.pojo.RechargePojo">
+		select
+			id,
+			player_account as playerAccount,
+			player_id as playerId,
+			player_name as playerName,
+			money_type as moneyType,
+			money_num as moneyNum,
+			is_calc as isCalc,
+			server_id as serverId,
+			recharge_type as rechargeType,
+			create_time as createTime,
+			login_name as loginName,
+			user_name as userName,
+			create_by as createBy
+		from recharge
+		where (success is null or success = 0)
+		and id in (<foreach item="item" index="index" collection="list" separator=",">#{item}</foreach>)
+	</select>
+	
+	<insert id="insert" parameterType="com.lingyu.dntg.bean.pojo.RechargePojo">
+		insert into recharge(
+			player_account,
+			player_id,
+			player_name,
+			money_type,
+			money_num,
+			is_calc,
+			server_id,
+			recharge_type,
+			create_time,
+			login_name,
+			user_name,
+			create_by,
+			fail_reason,
+			content,
+			auditor,
+			is_audit
+		)values(
+			#{playerAccount},
+			#{playerId},
+			#{playerName},
+			#{moneyType}, 
+			#{moneyNum}, 
+			#{isCalc}, 
+			#{serverId},
+			#{rechargeType}, 
+			#{createTime}, 
+			#{loginName},
+			#{userName},
+			#{createBy},
+			#{failReason}, 
+			#{content},
+			#{auditor},
+			#{isAudit}
+		)
+	</insert>
+	
+	<select id="byIds" resultType="com.lingyu.dntg.bean.pojo.RechargePojo">
+		select
+			id,
+			player_account as playerAccount,
+			player_id as playerId,
+			player_name as playerName,
+			money_type as moneyType,
+			money_num as moneyNum,
+			is_calc as isCalc,
+			server_id as serverId,
+			recharge_type as rechargeType,
+			create_time as createTime,
+			login_name as loginName,
+			user_name as userName,
+			create_by as createBy
+		from recharge
+		where id in (<foreach item="item" index="index" collection="list" separator=",">#{item}</foreach>)
+	</select>
+	
+	<!-- 审批更新 -->
+	<update id="updateAudit" parameterType="hashmap">
+		UPDATE recharge SET 
+			is_audit=#{isAudit},
+			auditor=#{auditor},
+			<if test="@Ognl@isNotBlank(failReason)">fail_reason = #{failReason}, </if>
+			success=#{success}
+		WHERE id=#{id}
+	</update>
+
+	<!-- 审批更新 -->
+	<update id="updateAuditCancel" parameterType="hashmap">
+		UPDATE recharge SET 
+			is_audit=#{isAuditCancel}
+		WHERE id in 
+		(<foreach collection="recordIds" item="item" index="index"  separator=",">
+			#{item}
+		</foreach>)
+	</update>
+</mapper>

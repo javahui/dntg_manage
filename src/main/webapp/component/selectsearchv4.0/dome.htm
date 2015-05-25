@@ -1,0 +1,185 @@
+<!DOCTYPE >
+<html >
+<head>
+<meta http-equiv="content-type" content="text/html; charset=gb2312" />
+<title>jquery 超级select插件 v4.0.0.0插件</title>
+</head>
+<script type="text/javascript" src="js/jquery1.4.2.js"></script>
+<script type="text/javascript" src="js/jquery.selectseach.js"></script>
+<link href="img/select.css" rel="stylesheet" type="text/css" />
+<!--
+//潇湘博客
+//http://blog.csdn.net/fkedwgwy
+//PHP 技术群：37304662
+//时间:2010-06-13
+//版本 v4.0.0.0
+//任意字符的输入
+//任意字符、中文与拼音综合查询
+//方向键选择option
+//优化下拉框显示效果
+//jquery超级select-input插件
+//此插件能处理适合于 改变html 标签的input和select的功能,使input、select操作更加方面。
+<script type="text/javascript" src="js/jquery.selectseach.js"></script>-->
+<script>
+
+function getmydata(){
+	alert($('#sssss').val());
+	}
+$(document).ready(function(){
+   $('select').selectseach(); 
+ });  
+</script>
+<body style="height:">
+<p>潇湘博客</p>
+<p><a href="http://blog.csdn.net/fkedwgwy">http://blog.csdn.net/fkedwgwy</a></p>
+<p>jquery 超级select插件 v4.0.0.0版本</p>
+<p> 支持汉字、头写拼音、英文快速定位查询的超级select插件。可方向键、tab 键快速选择。</p>
+<p>此插件能处理适合于 改变html 标签的input和select的功能,使input、select操作更加方面。使得select也可以进行填写功能。</p>
+<p>支持 ie6.0、7.0、8.0、firefox all 版本。</p>
+</p>
+</p>
+<table width="1127" border="0">
+  <tr>
+    <td width="282"><p>传统select</p>
+      <p>&nbsp;</p></td>
+    <td width="84">&nbsp;</td>
+    <td width="348">&nbsp;</td>
+    <td width="84">&nbsp;</td>
+    <td width="188">&nbsp;</td>
+  </tr>
+  <tr>
+    <td><select name="sssss5" id="sssss5" onChange="return getmydata()"  >
+        <option value="-1">所有学校</option>
+        <option value="139" selected="selected"> a english book </option>
+        <option value="140">浏阳市浏阳河小学</option>
+        <option value="141">浏阳市人民路小学</option>
+        <option value="142">浏阳市嗣同路小学</option>
+        <option value="143">浏阳市集里街道长南路小学</option>
+        <option value="144">浏阳市集里街道平水桥小学</option>
+        <option value="145">浏阳市集里街道禧和岭小学</option>
+        <option value="146">浏阳市集里龚家桥小学</option>
+        <option value="147" >浏阳市集里街道百宜小学</option>
+        <option value="148">浏阳市荷花街道杨家小学</option>
+        <option value="149">浏阳市荷花街道净溪小学</option>
+        <option value="150">浏阳市荷花街道牛石小学</option>
+        <option value="151">浏阳市荷花街道云桥小学</option>
+        <option value="152">浏阳市荷花街道早禾小学</option>
+        <option value="153">浏阳市荷花街道光彩小学</option>
+        <option value="154">浏阳市荷花街道小水小学</option>
+        <option value="155">浏阳市荷花街道建新小学</option>
+        <option value="156">a chinese man 胡</option>
+        <option value="157">浏阳市荷花街道胡坪小学</option>
+        <option value="158">liuyan</option>
+        <option value="159">changsha</option>
+      </select></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td height="107"><p>超级select插件</p>
+      
+    
+      <select name="sssss6" id="sssss6" m='search'>
+          <option value="-1">所有学校</option>
+          <option value="139">湾小学</option>
+          <option value="140">阳河小学</option>
+          <option value="141">浏阳市</option>
+        </select></td>
+    <td>&nbsp;</td>
+    <td></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td height="115"><select name="sssss1" id="sssss1" m='search'>
+        <option value="-1">所有学校</option>
+        <option value="139">浏阳市黄泥湾小学</option>
+        <option value="140">浏阳市浏阳河小学</option>
+        <option value="141">浏阳市人民路小学</option>
+        <option value="142">浏阳市嗣同路小学</option>
+        <option value="143">浏阳市集里街道长南路小学</option>
+        <option value="144">浏阳市集里街道平水桥小学</option>
+        <option value="145">浏阳市集里街道禧和岭小学</option>
+        <option value="146">浏阳市集里龚家桥小学</option>
+        <option value="147" selected="selected">浏阳市集里街道百宜小学</option>
+        <option value="148">浏阳市荷花街道杨家小学</option>
+        <option value="149">浏阳市荷花街道净溪小学</option>
+        <option value="150">浏阳市荷花街道牛石小学</option>
+        <option value="151">浏阳市荷花街道云桥小学</option>
+        <option value="152">浏阳市荷花街道早禾小学</option>
+        <option value="153">浏阳市荷花街道光彩小学</option>
+        <option value="154">浏阳市荷花街道小水小学</option>
+        <option value="155">浏阳市荷花街道建新小学</option>
+        <option value="156">浏阳市荷花街道罗直小学</option>
+        <option value="157">浏阳市荷花街道胡坪小学</option>
+        <option value="158">浏阳市荷花街道唐洲小学</option>
+        <option value="159">浏阳市荷花街道金沙路小学</option>
+      </select></td>
+    <td><select name="sssss2" id="sssss2" m='search'>
+        <option value="-1">所有学校</option>
+        <option value="139">湾小学</option>
+        <option value="140">阳河小学</option>
+        <option value="141">浏阳市</option>
+      </select></td>
+    <td><select name="sssss8" id="sssss8" m='search'>
+        <option value="154">街道小水小学</option>
+        <option value="155">建新小学</option>
+        <option value="156">直小学</option>
+        <option value="157">胡坪小学</option>
+        <option value="158">唐洲小学</option>
+        <option value="159">沙路小学</option>
+      </select></td>
+    <td><select name="sssss4" id="sssss4" m='search'>
+        <option value="-1">所有学校</option>
+        <option value="141">浏</option>
+        <option value="142">浏阳</option>
+      </select></td>
+    <td><select name="sssss" id="sssss" onChange="return getmydata()"  m='search'>
+        <option value="-1">所有学校</option>
+        <option value="139" selected="selected"> a english book </option>
+        <option value="140">浏阳市浏阳河小学</option>
+        <option value="141">浏阳市人民路小学</option>
+        <option value="142">浏阳市嗣同路小学</option>
+        <option value="143">浏阳市集里街道长南路小学</option>
+        <option value="144">浏阳市集里街道平水桥小学</option>
+        <option value="145">浏阳市集里街道禧和岭小学</option>
+        <option value="146">浏阳市集里龚家桥小学</option>
+        <option value="147" >浏阳市集里街道百宜小学</option>
+        <option value="148">浏阳市荷花街道杨家小学</option>
+        <option value="149">浏阳市荷花街道净溪小学</option>
+        <option value="150">浏阳市荷花街道牛石小学</option>
+        <option value="151">浏阳市荷花街道云桥小学</option>
+        <option value="152">浏阳市荷花街道早禾小学</option>
+        <option value="153">浏阳市荷花街道光彩小学</option>
+        <option value="154">浏阳市荷花街道小水小学</option>
+        <option value="155">浏阳市荷花街道建新小学</option>
+        <option value="156">a chinese man 胡</option>
+        <option value="157">浏阳市荷花街道胡坪小学</option>
+        <option value="158">liuyan</option>
+        <option value="159">changsha</option>
+      </select></td>
+  </tr>
+</table>
+<p>js code:</p>
+<p>第一种调用方法input 与select 的功能并存</p>
+<p>$(document).ready(function(){<br>
+$('#sssss').selectseach(); <br>
+}); </p>
+<p>第二种调用方法只有select 功能</p>
+<p>$(document).ready(function(){<br>
+$('#sssss').selectseach(<font style="color:red " >{input:false}</font>); <br>
+}); </p>
+<p>html:</p>
+<p>&lt;select name=&quot;sssss2&quot; id=&quot;sssss2&quot; <font style="color:red " >m='search'</font>&gt;<br>
+  &lt;option value=&quot;-1&quot;&gt;所有学校&lt;/option&gt;<br>
+  &lt;option value=&quot;139&quot;&gt;湾小学&lt;/option&gt;<br>
+  &lt;option value=&quot;140&quot;&gt;阳河小学&lt;/option&gt;<br>
+  &lt;option value=&quot;141&quot;&gt;浏阳市&lt;/option&gt;<br>
+  &lt;/select&gt;</p>
+<p>&nbsp;</p>
+<div id="msg"></div>
+<div id="msg1" style="color:red"></div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleBagSlot">
+	<!-- 查询角色的背包 -->
+	<select id="getRoleBagSlot" resultType="hashmap">
+		select 
+		id
+		,slot_num slotNum
+		,user_role_id userRoleId
+		,goods_id goodsId
+		,count
+		,bind
+		,expire_time expireTime
+		,rare_level rareLevel
+		,item_level itemLevel
+		,attributes
+		,log_update_time logUpdateTime
+		from role_bag_slot 
+		where user_role_id = #{id}
+		order by slot_num
+	</select>
+	<select id="getRoleBagSlotCount" resultType="int">
+		select 
+		count(*)
+		from role_bag_slot 
+		where user_role_id = #{id}
+		order by slot_num
+	</select>
+</mapper>
+

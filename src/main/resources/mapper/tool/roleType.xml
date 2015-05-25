@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleType">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			id,
+			user_id userId,
+			server_id serverId,
+			role_type roleType,
+			user_name userName,
+			log_time logTime,
+			(select server_name from game_server where server_id=role_type.server_id) as serverName
+		from role_type 
+		where 1=1
+		 <if test="@Ognl@isNotBlank(userId)">and user_id like concat('%', #{userId}, '%') </if> 
+		 <if test="@Ognl@isNotBlank(roleType)">and role_type = #{roleType}</if> 
+		 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime}]]> </if> 
+	 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime}]]>  </if>
+	 	 <if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(*) from role_type where 1=1
+		 <if test="@Ognl@isNotBlank(userId)">and user_id like concat('%', #{userId}, '%') </if> 
+		  <if test="@Ognl@isNotBlank(roleType)">and role_type = #{roleType}</if> 
+		 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime}]]> </if> 
+	 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime}]]>  </if>
+	 	 <if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into role_type(
+			server_id,
+			user_id, 
+			role_type,
+			log_time
+		)
+		values(
+			#{serverId},
+			#{userId},
+			#{roleType},
+			#{nowTime}
+		)
+	</insert>
+	
+	<select id="byId" parameterType="int" resultType="hashmap">
+		select
+			a.id id,
+			a.user_id userId,
+			a.server_id serverId,
+			b.server_name serverName,
+			a.role_type roleType
+		from role_type a
+		left join game_server b
+		on a.server_id = b.server_id
+		where a.id = #{id}
+	</select>
+	
+	<update id="update" parameterType="hashmap">
+		update role_type set role_type = #{roleType} 	
+		where id = #{id}
+	</update>
+	
+	<delete id="deleteById" parameterType="int">
+		delete from role_type where id = #{id}
+	</delete>
+</mapper>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="gameConfigFile">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		SELECT
+			id,
+			old_name as oldName,
+			file_map_name as fileMapName,
+			file_desc as fileDesc,
+			game_config_file.global,
+			(SELECT group_concat(gcs.server_id) FROM game_cf_server gcs WHERE gcs.file_id = game_config_file.id )as serverIds,
+			upload_time as uploadTime
+		FROM game_config_file where 1=1
+		<if test="@Ognl@isNotBlank(fileDesc)">  and file_desc like concat('%', #{fileDesc}, '%') </if> 
+		<if test="@Ognl@isNotBlank(fileMapName)">  and file_map_name =  #{fileMapName} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">  and DATE_FORMAT(upload_time, '%Y-%m-%d') <![CDATA[ >= ]]>  #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">  and DATE_FORMAT(upload_time, '%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if> 
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		SELECT count(1) FROM game_config_file where 1=1
+		<if test="@Ognl@isNotBlank(fileDesc)"> and file_desc like concat('%', #{fileDesc}, '%') </if> 
+		<if test="@Ognl@isNotBlank(fileMapName)"> and file_map_name =  #{fileMapName} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">  and DATE_FORMAT(upload_time, '%Y-%m-%d') <![CDATA[ >= ]]>  #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">  and DATE_FORMAT(upload_time, '%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if> 
+	</select>
+	
+	<select id="getFileNameByFileMapNameAndGlobal" parameterType="hashmap" resultType="string">
+		SELECT concat(filepath, new_name) FROM game_config_file WHERE file_map_name = #{fileMapName} and global = #{global} limit 1
+	</select>
+	
+	<select id="getFileNameByIds" resultType="string">
+		SELECT concat(filepath, new_name) FROM game_config_file WHERE id in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</select>
+	
+	<select id="byId" parameterType="int" resultType="hashmap">
+		SELECT  
+			id,
+			filepath,
+			file_map_name as fileMapName,
+			file_desc as fileDesc,
+			old_name as oldName,
+			new_name as newName,
+			md5,
+			global,
+			upload_time uploadTime,
+			(select GROUP_CONCAT(server_id) from game_cf_server where file_id = t.id and t.global = 0) as serverIds
+		FROM game_config_file t WHERE id = #{id}
+	</select>
+	
+	<insert id="insert" parameterType="hashmap" useGeneratedKeys="true" keyProperty="id">
+		insert into game_config_file(
+			filepath,
+			file_map_name,
+			old_name,
+			new_name,
+			file_desc,
+			md5,
+			global,
+			upload_time
+		)
+		values(
+			#{filepath},
+			#{fileMapName},
+			#{oldName},
+			#{newName},
+			#{fileDesc},
+			#{md5},
+			#{global},
+			#{nowTime}
+		)
+	</insert>
+	
+	<update id="update" parameterType="hashmap">
+		update game_config_file set id=id
+			<if test="@Ognl@isNotBlank(filepath)"> ,filepath=#{filepath} </if> 
+			<if test="@Ognl@isNotBlank(oldName)"> ,old_name=#{oldName} </if> 
+			<if test="@Ognl@isNotBlank(newName)"> ,new_name=#{newName} </if> 
+			<if test="@Ognl@isNotBlank(fileDesc)"> ,file_desc=#{fileDesc} </if> 
+			<if test="@Ognl@isNotBlank(md5)"> ,md5=#{md5} </if> 
+			<if test="@Ognl@isNotBlank(global)"> ,global=#{global} </if> 
+			,upload_time=#{nowTime}
+		where id=#{id}
+	</update>
+	
+	<delete id="deleteByFileMapNameAndGlobal" parameterType="hashmap">
+		DELETE FROM game_config_file WHERE file_map_name = #{fileMapName} and global = #{global}
+	</delete>
+	
+	<delete id="delete" parameterType="hashmap">
+		DELETE FROM game_config_file WHERE file_map_name = #{fileMapName} and global = #{global}
+	</delete>
+	
+	<delete id="deleteIds">
+		DELETE FROM game_config_file WHERE id in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+	
+</mapper>

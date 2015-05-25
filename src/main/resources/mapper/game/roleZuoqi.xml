@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleZuoqi">
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		select rank
+		  	  ,count(DISTINCT user_role_id) cnt
+			  ,(select count(DISTINCT user_role_id) from role_zuoqi) allCnt
+		from role_zuoqi 
+		GROUP BY rank
+	</select>
+	
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap" >
+		select rank
+		  	  ,count(DISTINCT user_role_id) cnt
+			  ,count(DISTINCT user_role_id)/(select count(DISTINCT user_role_id) from role_zuoqi)*100 rate
+		from role_zuoqi 
+		GROUP BY rank
+	</select>
+	
+	<!-- 查询角色的坐骑 -->
+	<select id="getRoleZuoqi" resultType="hashmap">
+		select name,
+		rank,
+		cur_rank curRank,
+		fail_count failCount,
+		history_count historyCount,
+		lucky_value luckyValue,
+		history_lucky historyLucky,
+		total_exp totalExp,
+		update_time updateTime 
+		from role_zuoqi a left join user_role b on b.id=a.user_role_id
+		where a.user_role_id = #{id}
+		order by rank desc,update_time desc
+	</select>
+</mapper>
+

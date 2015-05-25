@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="consumeBindybDetail">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			user_name as userName,
+			event_type as eventType,
+			yb,
+			current_yb as currentYb,
+			log_time as logTime
+		from consume_bindyb_detail_${month}
+		where 1=1
+		<if test="@Ognl@isNotBlank(userName)">and user_name = #{userName} </if>
+		<if test="@Ognl@isNotBlank(eventTypesList)">and event_type in (<foreach item="item" index="index" collection="eventTypesList" separator=",">#{item}</foreach>)</if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(log_time, '%d %H:%i') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(log_time, '%d %H:%i') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1) from consume_bindyb_detail_${month}
+		where 1=1
+		<if test="@Ognl@isNotBlank(userName)">and user_name = #{userName} </if>
+		<if test="@Ognl@isNotBlank(eventTypesList)">and event_type in (<foreach item="item" index="index" collection="eventTypesList" separator=",">#{item}</foreach>)</if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(log_time, '%d %H:%i') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(log_time, '%d %H:%i') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+	
+	<select id="existTableByMonth" parameterType="string" resultType="string">
+		SHOW TABLES LIKE 'consume_bindyb_detail_${_parameter}'
+	</select>
+	
+</mapper>

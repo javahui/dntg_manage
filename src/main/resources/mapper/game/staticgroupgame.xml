@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="serversIntegrationReportgame">
+<!-- 充值统计信息 得到distCount 付费用户数 allRmb,当日总计充值RMB,arpu arpu -->
+     <select id="selectRecharge_ByDaysStatistics" parameterType="hashmap" resultType="hashmap">
+        select 
+	    DATE_FORMAT(create_time,'%Y-%m-%d') dtime,
+	    count(DISTINCT user_guid) distCount,
+	    count(user_guid) allCount,
+	    sum(rmb) allRmb,sum(rmb)/count(DISTINCT user_guid) arpu
+	    from recharge_record 
+	    where
+	    <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+	    <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime} ]]> </if>   
+	    <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime} ]]> </if> 
+	    GROUP BY  DATE_FORMAT(create_time,'%Y-%m-%d')
+	    order by dtime desc
+    </select>
+
+<!-- 新增充值用户（得到 cnt） -->
+     <select id ="selectRecharge_ByNewStatistics" parameterType="hashmap" resultType="hashmap">
+      select count(a.user_guid) cnt,DATE_FORMAT(b.create_time,'%Y-%m-%d')dtime,DATE_FORMAT((select start_time from server_info),'%Y-%m-%d') openTime
+	    from(select user_guid,MIN(create_time)mtime from recharge_record 
+	    where 
+	    <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+		GROUP BY user_guid
+	    )a 
+	    right join(select create_time from recharge_record
+	    where
+	    <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+	    <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime} ]]> </if>   
+	    <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime} ]]> </if> 
+	    )b on b.create_time=a.mtime 
+	    group by DATE_FORMAT(b.create_time,'%Y-%m-%d')
+	    ORDER BY dtime desc
+     </select>
+     
+     <!--新创建用户数 (createCount) -->
+     <select id="createCountList" parameterType="hashmap" resultType="hashmap">
+        select 
+		DATE_FORMAT(create_time,'%Y-%m-%d')date,
+		count(1) createcount 
+		from user_role 
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime} ]]> </if>   
+	    <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime} ]]> </if> 
+		GROUP BY date ORDER BY date desc
+     </select>
+     
+      <!-- 玩家流失率 -->
+     <select id ="selectRecordsXLByPlayerLostReports" parameterType="hashmap" resultType="hashmap">
+      select * from
+		(select date_format(#{startTime},'%Y-%m-%d') the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 1 day),'%Y-%m-%d') the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 2 day),'%Y-%m-%d') the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 3 day),'%Y-%m-%d') the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 4 day),'%Y-%m-%d') the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 5 day),'%Y-%m-%d') the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 6 day),'%Y-%m-%d') the_date from dual)
+		as tb4 
+		left join
+		 (select cdate
+			,d,d1/d*100 d1,d2/d*100 d2,d3/d*100 d3,d4/d*100 d4,d5/d*100 d5,d6/d*100 d6,d7/d*100 d7 from
+			(select cdate,
+			(select count(id) as d1 from user_role where date_format(create_time,'%Y-%m-%d')=cdate) d,
+			(select count(id) as d1 from user_role where date_format(create_time,'%Y-%m-%d')=cdate and DATEDIFF(log_update_time,cdate)>=1) d1,
+			(select count(id) as d2 from user_role where date_format(create_time,'%Y-%m-%d')=cdate and DATEDIFF(log_update_time,cdate)>=2) d2,
+			(select count(id) as d3 from user_role where date_format(create_time,'%Y-%m-%d')=cdate and DATEDIFF(log_update_time,cdate)>=3) d3,
+			(select count(id) as d4 from user_role where date_format(create_time,'%Y-%m-%d')=cdate and DATEDIFF(log_update_time,cdate)>=4) d4,
+			(select count(id) as d5 from user_role where date_format(create_time,'%Y-%m-%d')=cdate and DATEDIFF(log_update_time,cdate)>=5) d5,
+			(select count(id) as d6 from user_role where date_format(create_time,'%Y-%m-%d')=cdate and DATEDIFF(log_update_time,cdate)>=6) d6,
+			(select count(id) as d7 from user_role where date_format(create_time,'%Y-%m-%d')=cdate and DATEDIFF(log_update_time,cdate)>=7) d7
+			from(
+			select date_format(create_time,'%Y-%m-%d') as cdate from user_role
+			where 1=1
+			<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ date_format(create_time,'%Y-%m-%d') >= #{startTime}]]> </if> 
+	        <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ date_format(create_time,'%Y-%m-%d') <= #{endTime}]]> </if> 
+			group by cdate
+		) as tb1 ) as tb2) tb3 on tb3.cdate=tb4.the_date
+     </select>  
+</mapper>

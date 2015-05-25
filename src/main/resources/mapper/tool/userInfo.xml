@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="userInfo">
+	<select id="byId" parameterType="hashmap" resultType="hashmap">
+		select 
+			id
+			,login_name as loginName
+			,user_name as userName
+			,password
+			,user_level as userLevel
+			,status
+			from user_info
+		where id = #{id}
+	</select>
+
+	<select id="login" parameterType="hashmap" resultType="com.lingyu.dntg.bean.vo.SessionUser">
+		select 
+			id,
+			login_name as loginName,
+			user_name as userName,
+			password,
+			user_level as userLevel,
+			(select 1 from user_info ui,role_info ri,user_role ur where ur.user_id = ui.id and ur.role_id=ri.id and ri.all_server =1 and ui.id = user_info.id limit 1) as allServer
+		from user_info 
+		where status = 1 
+		and login_name = #{loginName}
+		and password = <if test="@Ognl@isBlank(hiddenPassword)"> #{password} </if>
+					   <if test="@Ognl@isNotBlank(hiddenPassword)"> #{hiddenPassword} </if> 
+	</select>
+
+	<select id="getUserByLoginName" parameterType="int" resultType="com.lingyu.dntg.bean.vo.SessionUser">
+		select 
+			id,
+			login_name as loginName,
+			user_name as userName,
+			password,
+			user_level as userLevel
+			from user_info 
+		where status = 1 and login_name = #{loginName}
+	</select>
+
+	<select id="existLoingName" parameterType="string" resultType="int">
+		select count(1) from user_info where login_name = #{loginName}
+	</select>
+
+	<select id="existUserName" parameterType="string" resultType="int">
+		select count(1) from user_info where user_name = #{userName}
+	</select>
+
+	<!-- 用户管理 用户列表 -->
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			id,
+			login_name as loginName,
+			user_name as userName,
+			user_level,
+			status
+		from user_info
+		where 1=1
+		<if test="@Ognl@isNotBlank(loginName)">and login_name like concat('%',#{loginName},'%') </if> 
+		<if test="@Ognl@isNotBlank(userName)">and user_name like concat('%',#{userName},'%') </if> 
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1) from user_info
+		where 1=1
+		<if test="@Ognl@isNotBlank(loginName)">and login_name like concat('%',#{loginName},'%') </if> 
+		<if test="@Ognl@isNotBlank(userName)">and user_name like concat('%',#{userName},'%') </if> 
+	</select>
+
+	<!-- 用户管理 详细信息 -->
+	<select id="show" parameterType="int" resultType="hashmap">
+		select 
+			id,
+			login_name as loginName,
+			user_name as userName,
+			user_level,
+			status
+		from user_info
+		where id = #{id}
+	</select>
+	
+	<!-- 得到用户的所有权限的服务器 -->
+	<select id="getServerByUserId" parameterType="int" resultType="string">
+		select
+			gs.server_id
+		from user_info ui,role_info ri,user_role ur,role_server rs,game_server gs
+		where ur.user_id=ui.id and ur.role_id=ri.id and rs.role_id = ri.id and gs.id=rs.game_server_id and ui.id = #{userId} 
+	</select>
+	
+	<!-- 得到有相同role角色的所有userId -->
+	<select id="getRoleUserId" parameterType="int" resultType="int">
+	select DISTINCT ui.id as userId from user_info ui,user_role ur where ur.user_id=ui.id and ur.role_id in (
+		select ur.role_id from user_info ui,user_role ur where ui.id=ur.user_id and ui.id = #{userId}
+	)
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into user_info(
+			login_name,
+			user_name, 
+			password,
+			user_level,
+			status
+		)
+		values(
+			#{loginName},
+			#{userName},
+		 	#{password}, 
+			#{userLevel}, 
+			1
+		)
+	</insert>
+
+	<update id="update" parameterType="hashmap">
+		update user_info set id = #{id}
+			<if test="@Ognl@isNotBlank(userName)">, user_name = #{userName} </if>
+			<if test="@Ognl@isNotBlank(password)">, password = #{password} </if>
+		where id = #{id}
+	</update>
+
+	<update id="updatePwd" parameterType="hashmap">
+		update user_info set  password = #{password} where id = #{id}
+	</update>
+
+	<delete id="delete" parameterType="int">
+		delete from user_info where id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+</mapper>

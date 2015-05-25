@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleLevelUp">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+         select 
+	         user_name as userName,
+	         user_role_id as userRoleId,
+	         level as level,
+	         log_time as logTime
+         from role_level_upgrade
+         where 1=1
+         <if test="@Ognl@isNotBlank(userName)">and user_name = #{userName}</if> 
+           <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and  log_time> #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and   log_time< #{endTime}]]></if>  
+       order by log_time desc   
+    </select>
+    <select id="indexCount" parameterType="hashmap" resultType="int">
+        select count(1)
+           from role_level_upgrade
+           where 1=1
+           <if test="@Ognl@isNotBlank(userName)">and user_name = #{userName}</if> 
+             <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and  log_time> #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and   log_time< #{endTime}]]></if>  
+    </select>
+    
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+         select 
+	         user_name as userName,
+	         user_role_id as userRoleId,
+	         level as level,
+	         log_time as logTime
+         from role_level_upgrade
+         where 1=1
+         <if test="@Ognl@isNotBlank(userName)">and user_name = #{userName}</if> 
+           <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and  log_time> #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and   log_time< #{endTime}]]></if>  
+       order by log_time desc   
+    </select>
+    
+	<select id="getLevelDistribution" parameterType="hashmap" resultType="hashmap">
+    	select  
+			count(1) as num,
+			level
+		FROM
+		(
+			select 
+				max(level) as level
+			from role_level_upgrade 
+			where 1=1
+			<if test="@Ognl@isNotBlank(logTime)">and date_format(log_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{logTime}</if> 
+			GROUP BY user_name 
+		) temp
+		GROUP BY level
+    </select>
+</mapper>

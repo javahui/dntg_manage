@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="gameServer">
+	
+	<!-- 得到game_db_url不重复的所有server_id -->
+	<select id="getAllServerIdByGameDbUrlWithoutRepetition" resultType="string">
+		select GROUP_CONCAT(server_id) from game_server WHERE is_test = 0 group by game_db_url
+	</select>
+	
+	<!-- 根据game_db_url去重复的server_id -->
+	<select id="getServerIdByGameDbUrlWithoutRepetition" resultType="string">
+		select GROUP_CONCAT(server_id) from game_server WHERE is_test = 0 and server_id  in
+			<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+	            #{item}
+	        </foreach>
+	    group by game_db_url
+	</select>
+	
+	<!-- 得到log_db_url不重复的所有server_id -->
+	<select id="getAllServerIdByLogDbUrlWithoutRepetition" resultType="string">
+		select GROUP_CONCAT(server_id) from game_server WHERE is_test = 0 group by log_db_url
+	</select>
+	
+	<!-- 获取所有服的gate_url -->
+	<select id="getAllServerGateurl" resultType="string">
+		select gate_url from game_server WHERE is_test = 0 group by gate_url
+	</select>
+	
+	<!-- 根据log_db_url去重复的server_id -->
+	<select id="getServerIdByLogDbUrlWithoutRepetition" resultType="string">
+		select server_id from game_server WHERE is_test = 0 AND server_id  in (<foreach item="item" index="index" collection="list" separator="," > #{item}</foreach>)
+	    group by log_db_url
+	</select>
+	
+	<!-- 根据远程webservice url去重复的server_id -->
+	<select id="getServerIdByRemoteUrlWithoutRepetition" resultType="string">
+		select GROUP_CONCAT(server_id) from game_server WHERE server_id  in (<foreach item="item" index="index" collection="list" separator="," > #{item}</foreach>)
+	    group by game_server_remote_url
+	</select>
+	
+	<!-- 根据userId查询所有user拥有权限的服务器 -->
+	<select id="loadAllServerSortAndGameServerByUserId" parameterType="com.lingyu.dntg.bean.vo.SessionUser" resultType="hashmap">
+		SELECT 
+			 a.id sortId
+			,a.sort_name as sortName
+			,b.id
+			,b.server_id serverId
+			,b.server_name serverName
+		FROM server_sort a, game_server b
+		WHERE a.id = b.sort_id 
+		<if test="allServer == false" >
+			and b.server_id in (<foreach item="item" index="index" collection="ownerServerIdList" separator="," >#{item}</foreach>)
+		</if>
+		ORDER BY a.order_num, substr(server_id,3)+0 asc
+	</select>
+	
+	<select id="getServerIdsByAllserver" resultType="string">
+		SELECT server_id FROM game_server WHERE  is_test = 0 limit 10
+	</select>
+	
+	<select id="getAllandIsCheck" parameterType="int" resultType="hashmap">
+		select
+			t.*,
+			t1.game_server_id as gameServerId
+		from
+			(SELECT
+					 a.id sortId
+					,a.sort_name sortName
+					,b.id
+					,b.server_id serverId
+					,b.server_name serverName
+					FROM server_sort a, game_server b
+					WHERE a.id = b.sort_id ) t left join
+			  (SELECT game_server_id FROM role_server WHERE role_id = #{roleId} ) t1
+			on t.id=t1.game_server_id
+	</select>
+	
+	<select id="getBaiduServerId" resultType="string">
+		select
+			server_id
+		from game_server 
+		where sort_id = (select id from server_sort where sort_name ='baidu') and is_test = 0
+	</select>
+	
+	<select id="getGameServerRemoteUrlByServerId" parameterType="string" resultType="string">
+		SELECT game_server_remote_url FROM game_server WHERE server_id = #{serverId}
+	</select>
+	
+	<select id="indexList" parameterType="hashmap" resultType="hashmap">
+		select 
+			id
+			,server_id serverId
+			,server_name serverName
+			,server_desc serverDesc
+			,is_test isTest
+			,sort_id 
+			,order_num orderNum
+			,game_db_url gameDbUrl
+			,log_db_url logDbUrl
+			,gate_url gateUrl
+			,game_server_remote_url gameServerRemoteUrl
+			,server_status serverStatus
+			,(select a.sort_name  from server_sort a where a.id  = b.sort_id) sortName
+			from game_server b
+		where 1=1
+		 <if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId}</if> 
+		 <if test="@Ognl@isNotBlank(sortId)">and sort_id = #{sortId}</if> 
+		ORDER BY server_id desc,order_num asc 
+	</select>
+	<select id="indexListCount" parameterType="hashmap" resultType="int">
+		select count(*) from game_server
+		where 1=1
+		 <if test="@Ognl@isNotBlank(serverId)">and server_id = #{serverId}</if> 
+		 <if test="@Ognl@isNotBlank(sortId)">and sort_id = #{sortId}</if> 
+	</select>	
+	
+	<select id="show" parameterType="int" resultType="hashmap">
+		select 
+			id
+			,server_id serverId
+			,server_name serverName
+			,server_desc serverDesc
+			,is_test isTest
+			,sort_id 
+			,order_num orderNum
+			,game_db_url gameDbUrl
+			,log_db_url logDbUrl
+			,gate_url gateUrl 
+			,game_server_remote_url gameServerRemoteUrl
+			,server_status serverStatus
+			,(select a.sort_name  from server_sort a where a.id  = b.sort_id) sortName
+			from game_server b
+		where id = #{id}
+	</select>
+	
+	<!--  得到所有没有被跨服选中过的服务器 -->
+	<select id="getkuafuSever" parameterType="string" resultType="hashmap">
+		SELECT 
+			a.sort_name as sortName,
+			server_id as serverId,
+			b.server_name serverName
+		FROM server_sort a, game_server b
+		WHERE a.id = b.sort_id
+		and not EXISTS (
+			select * from kuafu_servers 
+			where server_id = b.server_id 
+			<if test = "_parameter!=null and _parameter!='' ">
+			and server_id not in (select DISTINCT server_id from kuafu_servers where kuafu_id = #{_parameter})
+			</if>
+		) 
+		ORDER BY a.order_num, substr(server_id,3)+0 asc
+	</select>
+	
+	<!-- 查询所有服务器 -->		
+	<select id="allServer" >
+	        select 
+	           id as id,
+	           server_name as serverName,
+	           gate_url as gateUrl
+	        from game_server
+	        where sort_id=(select id from server_sort where sort_name=#{sort})
+	</select>
+	
+	<!-- 查询平台下的所有服务器 -->		
+	<select id="getServerBySortId" parameterType="hashmap" resultType="string">
+	        select 
+	           server_id
+	        from game_server
+	        where sort_id=#{sortId}
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into game_server(
+			server_id,
+			server_name,
+			server_desc,
+			is_test,
+			sort_id,
+			order_num,
+			game_db_url,
+			log_db_url,
+			gate_url,
+			game_server_remote_url,
+			server_status
+		)
+		values(
+			#{serverId},
+			#{serverName},
+			#{serverDesc},
+			#{isTest},
+			#{sortId},
+			#{orderNum},
+			#{gameDbUrl},
+			#{logDbUrl},
+			#{gateUrl},
+			#{gameServerRemoteUrl},
+			#{serverStatus}
+		)
+	</insert>
+	
+	<select id="byId" parameterType="int" resultType="hashmap">
+		select
+			id
+			,server_id serverId
+			,server_name serverName
+			,server_desc serverDesc
+			,is_test isTest
+			,sort_id sortId
+			,order_num orderNum
+			,game_db_url gameDbUrl
+			,log_db_url logDbUrl
+			,gate_url gateUrl
+			,game_server_remote_url gameServerRemoteUrl
+			,server_status serverStatus
+		from game_server
+		where id = #{id}
+	</select>
+	
+	<update id="update" parameterType="hashmap">
+		update game_server 
+		set server_id = #{serverId} ,
+		  	  server_name = #{serverName} ,
+			  server_desc = #{serverDesc} ,
+			  is_test = #{isTest},
+		  	  sort_id = #{sortId} ,
+			  order_num = #{orderNum} ,
+		  	  game_db_url = #{gameDbUrl} ,
+			  log_db_url = #{logDbUrl} ,
+			  gate_url = #{gateUrl} ,
+		  	  game_server_remote_url = #{gameServerRemoteUrl}
+		where id = #{id}
+	</update>
+	
+	<delete id="delete" >
+		delete from game_server where id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+	
+	<update id="updateGameServerStatusOpen" parameterType="hashmap">
+		update game_server 
+		set server_status = 1 where id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</update>
+	
+	<update id="updateGameServerStatusClose" parameterType="hashmap">
+		update game_server 
+		set server_status = 0 where id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</update>
+	
+	<update id="updateAllBySortId" parameterType="hashmap">
+		update game_server 
+		set server_status = #{serverStatus}
+		where 1=1
+		<if test="@Ognl@isNotBlank(sortId)">and sort_id = #{sortId}</if>
+	</update>
+		
+</mapper>

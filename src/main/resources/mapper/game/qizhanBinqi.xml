@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="qizhanBinqi">
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		select count(user_role_id) scount
+			  ,binqi_level bingqiLevel
+			  ,count(user_role_id)/(select count(user_role_id) from role_qizhanbinqi)*100 rate
+	    from role_qizhanbinqi 
+	    GROUP BY bingqiLevel
+	    ORDER BY bingqiLevel desc
+	</select>
+
+	<select id="indexAllCount" parameterType="hashmap" resultType="int" >
+		select count(user_role_id) allCount from role_qizhanbinqi
+	</select>
+</mapper>			  

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleEquipSlot">
+	<!-- 查询角色的装备 -->
+	<select id="getRoleEquipSlot" resultType="hashmap">
+		select 
+			id
+			,slot_num slotNum
+			,user_role_id userRoleId
+			,goods_id goodsId
+			,count 
+			,bind
+			,expire_time expireTime
+			,rare_level rareLevel
+			,item_level itemLevel
+			,attributes
+			,log_update_time logUpdateTime
+		from role_equip_slot
+		where user_role_id = #{id}
+	</select>
+	
+	<select id="selectGroupRareLevelSlot" parameterType="hashmap" resultType="hashmap">
+		SELECT
+			t.rare_level as col,
+			if(t.slot_num=-86 || t.slot_num=-91, slot_num+1, slot_num) as row,
+			count(1) as num
+		from role_equip_slot t left join user_role u on u.id = t.user_role_id
+		where 1=1
+		<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+		<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+		<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+		<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(t.log_update_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(t.log_update_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		GROUP BY col desc, row
+	</select>
+</mapper>

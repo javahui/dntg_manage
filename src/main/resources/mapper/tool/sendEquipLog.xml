@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="sendEquipLog">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			id,
+			server_id as serverId,
+			login_name as loginName,
+			send_name as sendName,
+			goods 
+		from send_equip_log
+		where 1=1
+		<if test="@Ognl@isNotBlank(loginName)">and login_name like concat('%',#{loginName},'%') </if>
+		<if test="@Ognl@isNotBlank(sendName)">and send_name like concat('%',#{sendName},'%') </if>
+		order by id desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1)
+		from send_equip_log
+		where 1=1
+		<if test="@Ognl@isNotBlank(loginName)">and login_name like concat('%',#{loginName},'%') </if>
+		<if test="@Ognl@isNotBlank(sendName)">and send_name like concat('%',#{sendName},'%') </if>
+	</select>
+	
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into send_equip_log(server_id,login_name,send_name,goods)
+					value(#{currentServerId},#{userName}, #{sessionUser.loginName},#{equipName})
+	</insert>
+</mapper>

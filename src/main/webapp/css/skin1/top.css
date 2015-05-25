@@ -1,0 +1,118 @@
+*{
+	margin: 0;
+	padding: 0;
+	height: auto;
+}
+body{
+	background-color: #111;
+}
+img{
+	border: 0;
+}
+ul{
+	list-style-type: none; 
+}
+.top-all{
+	width:100%;
+	float: left;
+	height: 70px;
+}
+.left-nav{
+	float: left;
+	width: auto;
+	overflow: hidden;
+}
+/* navigation */
+#nav {
+	float: left;
+	width: 700px;
+	height: 25px;
+	line-height: 25px;
+	font-size: 12px;
+	font-family:Tahoma, Verdana;
+	font-weight: bold;
+	list-style: none;
+	margin: 40px 0 0 0;
+	padding: 0;
+	color: #BFBFBF;
+}
+
+#nav a {
+	float: left; 
+	color: #BFBFBF;
+	text-decoration: none;
+	padding: 0 5px;
+}
+
+#nav a.active {
+	font-weight: bold;
+}
+
+#nav a:hover{
+	background-color: #FFF;
+	color: #000;
+}
+
+#nav li {
+	float: left;
+	list-style: none;
+	margin: 0 0 0 10px;
+}
+.huise{
+	color: #DDD;
+	margin-right: 5px;
+}
+#curServer{
+	margin: 0 5px;
+	background-color: #4C9800;
+	color: #FFF;
+	padding: 2px 5px;
+	font-weight: normal;
+}
+.thickbox{
+	padding: 0 5px 0 5px;
+	border-radius: 5px;
+	border: 0;
+	background-color: #4A9700;
+	cursor: pointer;
+	color:#FFF;
+	line-height: 20px;
+	font-size:12px;
+	behavior: url(css/ie-css3.htc);
+	z-index:2;
+	position: relative;
+}
+.thickbox:hover{
+	background-color: #79B900;
+	color: #FFF;
+}
+#top-servers{
+	display: none;
+}
+.server-sort-tb{
+	float: left;
+	width: 100%;
+	line-height: 25px;
+	text-indent: 5px;
+	background-color: #FFF;
+}
+.game-server-list-ul{
+	background-color: #FFF;
+}
+.game-server-list-ul li{
+	float: left;
+	margin-left: 20px;
+}
+.game-server-sort-name-div{
+	width: 100%;
+	float: left;
+	background-color: #F0F0F0;
+	margin: 0;
+	padding: 0;
+}
+#right-logo{
+	float: right;
+	width: auto;
+	height: auto;
+	overflow: hidden;
+}

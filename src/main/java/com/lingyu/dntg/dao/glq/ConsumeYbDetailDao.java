@@ -1,0 +1,44 @@
+package com.lingyu.dntg.dao.glq;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+import com.lingyu.dntg.bean.vo.pagin.PagingList;
+import com.lingyu.dntg.dao.base.AbstractDao;
+
+/**
+ * 绑定元宝消耗详细日志DAO
+ * @author donghui
+ */
+@Component
+public class ConsumeYbDetailDao extends AbstractDao{
+
+	
+	/**
+	 * 查询一个月份的数据
+	 * @param month 月份
+	 * @param paramMap	查询
+	 */
+	public PagingList selectByMonth(String month, Map paramMap){
+		if (isExistTableByMonth(month)) {
+			if (paramMap == null) {paramMap = new HashMap();}
+			paramMap.put("month", month);
+			return logDaoTemplate.paging("consumeYbDetail.index", paramMap);
+		}
+		else{
+			return new PagingList();
+		}
+	}
+	
+	/**
+	 *	判断一个consume_bindyb_detail_yyyy_mm形式的表名是否存在
+	 * @param month 月份
+	 */
+	public boolean isExistTableByMonth(String month){
+		String result = logDaoTemplate.selectOne("consumeYbDetail.existTableByMonth", month);
+		return StringUtils.isNotBlank(result);
+	}
+}

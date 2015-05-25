@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="operationLog">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			a.id,
+			a.user_id as userId,
+			a.operation,
+			a.description,
+			a.oper_time as operTime,
+			b.user_name userName
+		from operation_log a, user_info b where a.user_id = b.id and b.user_level >= 0
+		<if test="@Ognl@isNotBlank(userName)"> and b.user_name  like concat('%', #{userName}, '%') </if>
+		<if test="@Ognl@isNotBlank(startTime)"> and DATE_FORMAT(a.oper_time, '%Y-%m-%d') <![CDATA[>=]]>  #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">  and DATE_FORMAT(a.oper_time, '%Y-%m-%d') <![CDATA[<=]]> #{endTime} </if>
+		order by id Desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1) from operation_log a, user_info b where a.user_id = b.id and b.user_level >= 0
+		<if test="@Ognl@isNotBlank(userName)"> and b.user_name  like concat('%', #{userName}, '%') </if>
+		<if test="@Ognl@isNotBlank(startTime)"> and DATE_FORMAT(a.oper_time, '%Y-%m-%d') <![CDATA[>=]]>  #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">  and DATE_FORMAT(a.oper_time, '%Y-%m-%d') <![CDATA[<=]]> #{endTime} </if>
+	</select>
+
+	<insert id="insert" parameterType="com.lingyu.dntg.bean.pojo.OperationLog">
+		insert into operation_log(
+			user_id,
+			operation,
+			description,
+			oper_time
+		)
+		values(
+			#{userId},
+			#{operation},
+			#{description},
+			#{operTime}
+		)
+	</insert>
+</mapper>

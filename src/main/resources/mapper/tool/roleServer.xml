@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleServer">
+
+	<insert id="insert" parameterType="hashmap">
+		insert into role_server(role_id, game_server_id)
+		values
+		<foreach item="item" index="index" collection="serverIds" separator=",">(#{roleId}, #{item})</foreach>
+	</insert>
+	
+	<delete id="deleteByRoleId" parameterType="int">
+		delete from role_server where role_id=#{roleId}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="yxbConsume">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+         select 
+			id,
+			user_name as userName,
+			event_type as eventType,
+			sum(yxb) yxb,
+			min(current_yxb) currentYxb,
+			sum(times) times,
+			log_time as logTime
+		 from yxb_consume
+         where 1=1
+         <if test="@Ognl@isNotBlank(userName)">and user_name = #{userName}</if> 
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in (<foreach item="item" index="index" collection="eventTypesList" separator=",">#{item}</foreach>)  </if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day> #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day< #{endTime}]]></if>   
+         group by log_time,user_name,event_type
+		 order by logTime desc,yxb desc
+    </select>
+    <select id="indexCount" parameterType="hashmap" resultType="int">
+	      select COUNT(DISTINCT log_time,user_name,event_type) from yxb_consume where 1=1
+         <if test="@Ognl@isNotBlank(userName)">and user_name = #{userName}</if> 
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in (<foreach item="item" index="index" collection="eventTypesList" separator=",">#{item}</foreach>)  </if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day> #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day< #{endTime}]]></if> 
+	</select>
+	
+	<!-- 游戏数据统计  游戏币消耗每日统计 -->
+	<select id="indexDay" parameterType="hashmap" resultType="hashmap">
+		select 
+			event_type as eventType
+			,sum(yxb) yxb
+			,sum(times) times
+			,log_day as logDay
+		from yxb_consume
+        where 1=1
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+         	<foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+               #{item}  
+            </foreach>  
+		</if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day<= #{endTime}]]></if>
+		group by log_day,event_type
+		order by log_day desc,yxb desc 
+    </select>
+	 <select id="indexDayCount" parameterType="hashmap" resultType="int">
+		select COUNT(DISTINCT log_day,event_type) 
+	    from yxb_consume
+	    where 1=1
+        <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+          	<foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+            	 #{item}  
+          	</foreach>  
+		</if> 
+        <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+        <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and log_day<= #{endTime}]]></if>
+	</select>
+	
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+		select 
+			event_type as eventType
+			,sum(yxb) yxb
+			,sum(times) times
+			,log_day as logDay
+		from yxb_consume
+        where 1=1
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+         	<foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+               #{item}  
+            </foreach>  
+		</if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day<= #{endTime}]]></if>
+		group by log_day,event_type
+		order by log_day desc,yxb desc 
+    </select>
+</mapper>

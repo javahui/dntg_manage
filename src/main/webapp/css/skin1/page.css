@@ -1,0 +1,70 @@
+@CHARSET "UTF-8";
+/**
+  * 特殊的，个性定制的css
+ */
+
+/**
+  * role_server.jsp
+ */
+.role-server{
+	border:1px solid #CCCCCC;
+}
+.role-server-header{
+	height: 40px;
+	line-height: 40px;
+	width: 100%;
+	border: 0;
+}
+#role-server-red{
+	font-weight: bold;
+	color: #F00;
+	margin: 0 3px;
+}
+.game-server-sort-name{
+	
+}
+.game-server-list-ul{
+	background-color: #FFF;
+}
+.game-server-list-ul li{
+	float: left;
+	margin-left: 20px;
+}
+.game-server-sort-name-div{
+	width: 100%;
+	float: left;
+	background-color: #F0F0F0;
+	margin: 0;
+	padding: 0;
+}
+.server-sort-class{
+	overflow: auto;
+	width: 600px;
+	height: 400px
+}
+.server-sort-tb{
+	float: left;
+	width: 100%;
+	line-height: 25px;
+	text-indent: 5px;
+	background-color: #FFF;
+}
+.server-sort-botton{
+	float: left;
+	width: 100%;
+	padding: 5px 0;
+	text-indent: 5px;
+	background-color: #F0F0F0;
+}
+.div_scroll{
+	float: left;
+	width: 100%;;
+	height: 700px;
+	overflow: scroll;
+	border: 1px solid #CCC;
+	border-top: 0; 
+}
+#start-info{
+	height: 24px;
+	line-height: 24px;
+}

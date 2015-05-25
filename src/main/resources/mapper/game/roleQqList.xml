@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleQqList">
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		SELECT
+			t.user_role_id as id,
+			ur.name as playerName,
+			t.qq,
+			t.log_update_time logUpdateTime,
+			t.is_get_rewards isGetRewards,
+			t.user_name as userName
+		FROM role_qq_list t, user_role ur
+		where  ur.id=t.user_role_id
+		<if test="@Ognl@isNotBlank(playerName)"> and ur.name like concat('%', #{playerName}, '%') </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(t.log_update_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(t.log_update_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		order by t.log_update_time Desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		SELECT count(1) FROM role_qq_list t, user_role ur where  ur.id=t.user_role_id
+		<if test="@Ognl@isNotBlank(userRoleName)"> and ur.name like concat('%', #{userRoleName}, '%') </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(t.log_update_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(t.log_update_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+	
+	<select id="byId" parameterType="string" resultType="hashmap" >
+		SELECT
+			t.user_role_id as id,
+			ur.name as userRoleName,
+			t.qq
+		FROM role_qq_list t, user_role ur
+		where ur.id=t.user_role_id and t.user_role_id = #{id}
+	</select>
+	
+	<update id="update" parameterType="hashmap">
+		UPDATE role_qq_list SET qq = #{qq} WHERE user_role_id =#{id}
+	</update>
+</mapper>
+

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="serverRealTimeTotalData">
+
+	<!-- 实时分服总数据 -->
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select
+			log_time as logTime,
+			(select ss.sort_name from server_sort ss, game_server gs where ss.id=gs.sort_id and gs.server_id=t.server_id) as sortName,
+			(select gs.server_name from game_server gs where gs.server_id=t.server_id) as serverName,
+			today_create  as todayCreate,
+			today_login as todayLogin,
+			online_count as onlineCount,
+			pccu,
+			charge_count as chargeCount,
+			charge_total as chargeTotal,
+			pay_odds as payOdds,
+			arpu
+		from server_real_time_total_data_${month} t
+		where t.log_hour = #{logHour}
+		<if test="sessionUser.allServer == false"> 
+			and t.server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList" separator=",">#{item}</foreach>)
+		</if>
+		order by
+		(select ss.order_num from server_sort ss, game_server gs where ss.id=gs.sort_id and gs.server_id=t.server_id),
+		substr(t.server_id,3)+0 
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+	   select count(1) from server_real_time_total_data_${month} t where t.log_hour = #{logHour}
+		<if test="sessionUser.allServer == false"> 
+			and t.server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList" separator=",">#{item}</foreach>)
+		</if>
+	</select>
+	<select id="indexTotal" parameterType="hashmap" resultType="hashmap">
+	   select 
+			'总计' as logTime,
+			'-' as sortName,
+			'-' as serverName,
+			sum(today_create)  as todayCreate,
+			sum(today_login) as todayLogin,
+			sum(online_count) as onlineCount,
+			sum(pccu) as pccu,
+			sum(charge_count) as chargeCount,
+			sum(charge_total) as chargeTotal,
+			sum(charge_count)/sum(today_login) as payOdds,
+			sum(charge_total)/sum(charge_count) as arpu
+		from server_real_time_total_data_${month}
+		where log_hour = #{logHour}
+		<if test="sessionUser.allServer == false"> 
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList" separator=",">#{item}</foreach>)
+		</if>
+	 </select>
+	 
+	 <select id="xls" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+	 	select * from (
+			select
+				log_time as logTime,
+				(select ss.sort_name from server_sort ss, game_server gs where ss.id=gs.sort_id and gs.server_id=t.server_id) as sortName,
+				(select gs.server_name from game_server gs where gs.server_id=t.server_id) as serverName,
+				today_create  as todayCreate,
+				today_login as todayLogin,
+				online_count as onlineCount,
+				pccu,
+				charge_count as chargeCount,
+				charge_total as chargeTotal,
+				pay_odds as payOdds,
+				arpu
+			from server_real_time_total_data_${month} t
+			where t.log_hour = #{logHour}
+			<if test="sessionUser.allServer == false"> 
+				and t.server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList" separator=",">#{item}</foreach>)
+			</if>
+			order by
+			(select ss.order_num from server_sort ss, game_server gs where ss.id=gs.sort_id and gs.server_id=t.server_id),
+			substr(t.server_id,3)+0 
+		)temp
+		union all
+		select 
+			'总计' as logTime,
+			'-' as sortName,
+			'-' as serverName,
+			sum(today_create)  as todayCreate,
+			sum(today_login) as todayLogin,
+			sum(online_count) as onlineCount,
+			sum(pccu) as pccu,
+			sum(charge_count) as chargeCount,
+			sum(charge_total) as chargeTotal,
+			sum(charge_count)/sum(today_login) as payOdds,
+			sum(charge_total)/sum(charge_count) as arpu
+		from server_real_time_total_data_${month}
+		where log_hour = #{logHour}
+		<if test="sessionUser.allServer == false"> 
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList" separator=",">#{item}</foreach>)
+		</if>
+	 </select>
+	
+	<select id="getMaxPccuBySortAndMonth" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+		select 
+			ss.sort_name sortName,
+			t.log_day logDay,
+			gs.server_name serverName,
+			max(t.pccu) pccu
+		from server_real_time_total_data_${month} t ,server_sort ss, game_server gs
+		where  ss.id=gs.sort_id and gs.server_id=t.server_id
+		and date_format(t.log_day,'%Y-%m') = #{logMonth}
+		and ss.id= #{sortId}
+		group by t.log_day,gs.server_id
+	 </select>
+	
+	<select id="existTableByMonth" parameterType="string" resultType="string">
+		SHOW TABLES LIKE 'server_real_time_total_data_${_parameter}'
+	</select>
+	
+	<insert id="batchinsertServerRealTimeTotalData" parameterType="hashMap">
+		insert into server_real_time_total_data_${month}(
+		 server_id ,
+		 today_create ,
+		 today_login ,
+		 online_count ,
+		 charge_count_incr ,
+		 charge_count ,
+		 charge_total ,
+		 pay_odds ,
+		 arpu ,
+		 accu ,
+		 pccu ,
+		 incr_yb ,
+		 decr_yb ,
+		 dt ,
+		 log_day ,
+		 log_hour ,
+		 log_minute ,
+		 log_time
+		)
+		values
+		<foreach item="item" index="index" collection="dataList" separator=",">  
+		(
+			#{item.serverId} ,
+			#{item.todayCreate} ,
+			#{item.todayLogin} ,
+			#{item.onlineCount} ,
+			#{item.chargeCountIncr} ,
+			#{item.chargeCount} ,
+			#{item.chargeTotal} ,
+			#{item.payOdds} ,
+			#{item.arpu} ,
+			#{item.accu} ,
+			#{item.pccu} ,
+			#{item.incrYb} ,
+			#{item.decrYb} ,
+			#{item.dt} ,
+			#{item.logDay} ,
+			#{item.logHour} ,
+			#{item.logMinute} ,
+			#{item.logTime}
+		)
+    	</foreach>  
+	</insert>
+	
+	<insert id="insertServerRealTimeTotalData" parameterType="com.lingyu.dntg.bean.pojo.ServerRealTimeTotalData">
+		insert into server_real_time_total_data(
+		 server_id ,
+		 today_create ,
+		 today_login ,
+		 online_count ,
+		 charge_count_incr ,
+		 charge_count ,
+		 charge_total ,
+		 pay_odds ,
+		 arpu ,
+		 accu ,
+		 pccu ,
+		 incr_yb ,
+		 decr_yb ,
+		 dt ,
+		 log_day ,
+		 log_hour ,
+		 log_minute ,
+		 log_time
+		)
+		values(
+		 #{serverId} ,
+		 #{todayCreate} ,
+		 #{todayLogin} ,
+		 #{onlineCount} ,
+		 #{chargeCountIncr} ,
+		 #{chargeCount} ,
+		 #{chargeTotal} ,
+		 #{payOdds} ,
+		 #{arpu} ,
+		 #{accu} ,
+		 #{pccu} ,
+		 #{incrYb} ,
+		 #{decrYb} ,
+		 #{dt} ,
+		 #{logDay} ,
+		 #{logHour} ,
+		 #{logMinute} ,
+		 #{logTime}
+		)
+	</insert>
+	
+	<update id="createTableByMonth" parameterType="string">
+		CREATE TABLE `server_real_time_total_data_${_parameter}` (
+		  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+		  `server_id` varchar(36) DEFAULT NULL,
+		  `today_create` int(11) DEFAULT '0' COMMENT '今日创建人数',
+		  `today_login` int(11) DEFAULT '0' COMMENT '今日登录人数',
+		  `online_count` int(11) DEFAULT '0' COMMENT '当前在线人数',
+		  `charge_count_incr` int(11) DEFAULT '0' COMMENT '新付费用户数',
+		  `charge_count` int(11) DEFAULT '0' COMMENT '今日付费用户数',
+		  `charge_total` int(11) DEFAULT '0' COMMENT '今日总充值金额',
+		  `pay_odds` float(11,4) DEFAULT '0.0000' COMMENT '付费率(付费用户数/登录用户数)',
+		  `arpu` int(11) DEFAULT '0' COMMENT '平均付费值(chargeTotal/chargeCount)',
+		  `accu` int(11) DEFAULT '0' COMMENT '平均在线数',
+		  `pccu` int(11) DEFAULT '0' COMMENT '今日最高在线数',
+		  `incr_yb` int(11) DEFAULT '0' COMMENT '今日新增元宝数',
+		  `decr_yb` int(11) DEFAULT '0' COMMENT '今日消耗元宝数',
+		  `dt` int(11) DEFAULT '0' COMMENT '平均在线时长',
+		  `log_day` varchar(10) DEFAULT NULL,
+		  `log_hour` varchar(20) DEFAULT NULL,
+		  `log_minute` varchar(20) DEFAULT NULL,
+		  `log_time` varchar(20) DEFAULT NULL,
+		  `log_update_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+		  PRIMARY KEY (`id`)
+		) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+	</update>
+		
+	<delete id="deleteByLogDay" parameterType="hashmap">
+		delete from server_real_time_total_data_${month} where log_day = #{logDay}
+	</delete>
+	
+	<delete id="deleteByLoghourAndServer" parameterType="hashmap">
+		delete from server_real_time_total_data_${month} where log_hour = #{logHour} and server_id = #{server}
+	</delete>
+	
+	<delete id="deleteByLoghourAndServerIds" parameterType="hashmap">
+		delete from server_real_time_total_data_${month} 
+		where log_hour = #{logHour}
+		and server_id in (<foreach item="item" index="index" collection="dataList" separator=",">#{item.serverId}</foreach>)
+	</delete>
+</mapper>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="logOutStatistics">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+       	SELECT
+			id,
+			sum(online_duration) as onlineDuration,
+			role_name as roleName,
+			log_day as logDay
+		FROM log_out_statistics
+		where 1=1
+		<if test="@Ognl@isNotBlank(roleName)">and role_name= #{roleName}</if>
+		<if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day >= #{startTime}]]></if>
+		<if test="@Ognl@isNotBlank(endTime)"><![CDATA[and log_day <= #{endTime}]]></if>
+		GROUP BY log_day, role_name
+        ORDER BY log_day DESC, onlineDuration DESC
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+   		SELECT COUNT(DISTINCT log_day, role_name) FROM log_out_statistics where 1=1
+		<if test="@Ognl@isNotBlank(roleName)">and role_name= #{roleName}</if>
+		<if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day >= #{startTime}]]></if>
+		<if test="@Ognl@isNotBlank(endTime)"><![CDATA[and log_day <= #{endTime}]]></if>
+    </select>
+    
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+       	SELECT
+			role_name as roleName,
+			sum(online_duration)/3600 as onlineDuration,
+			log_day as logDay
+		FROM log_out_statistics
+		where 1=1
+		<if test="@Ognl@isNotBlank(roleName)">and role_name= #{roleName}</if>
+		<if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day >= #{startTime}]]></if>
+		<if test="@Ognl@isNotBlank(endTime)"><![CDATA[and log_day <= #{endTime}]]></if>
+		GROUP BY log_day, role_name
+        ORDER BY log_day DESC, onlineDuration DESC
+	</select>
+    
+    <select id="logoutStatistics" parameterType="hashmap" resultType="hashmap">
+	    select 
+		    log_day,
+		    avg(online_duration)/3600 avg 
+	    from log_out_statistics 
+		where 1=1
+		 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_day >= #{startTime}]]> </if> 
+	 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_day <= #{endTime}]]>  </if>
+	    GROUP by log_day
+	    ORDER BY log_day desc
+	</select>
+	<select id="logoutStatisticsCount" parameterType="hashmap" resultType="int">
+    	select COUNT(DISTINCT log_day) from log_out_statistics where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_day >= #{startTime}]]> </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_day <= #{endTime}]]>  </if>  
+    </select>
+</mapper>

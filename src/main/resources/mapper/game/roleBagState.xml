@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleBagState">
+	<!-- 查询角色的背包 -->
+	<select id="getRoleBagState" resultType="hashmap">
+		select 
+		user_role_id
+		,bag_capacity bagCapacity
+		,bag_update_slot_time bagUpdateSlotTime
+		from role_bag_state 
+		where user_role_id = #{id}
+	</select>
+</mapper>
+

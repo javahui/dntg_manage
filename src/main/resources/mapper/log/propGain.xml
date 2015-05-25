@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="propGain">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+	 	select
+	 		user_name as userName,
+	 		event_type as eventType,
+	 		sum(times) as times,
+	 		goods_name as goodsName,
+	 		sum(count) as count,
+	 		log_time as logTime
+		from prop_gain                                                      
+		where 1=1
+         <if test="@Ognl@isNotBlank(userName)">and user_name =#{userName}</if> 
+         <if test="@Ognl@isNotBlank(goodName)">and goods_name =#{goodName}</if> 
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in (<foreach item="item" index="index" collection="eventTypesList" separator="," > #{item}</foreach>) </if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day >= #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day <= #{endTime}]]></if>   
+        group by log_time,user_name,event_type,goods_name
+        order by logTime desc,count desc
+    </select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select COUNT(DISTINCT log_time,user_name,event_type,goods_name)  from prop_gain where 1=1
+        <if test="@Ognl@isNotBlank(userName)">and user_name =#{userName}</if> 
+        <if test="@Ognl@isNotBlank(goodName)">and goods_name =#{goodName}</if> 
+        <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in (<foreach item="item" index="index" collection="eventTypesList" separator="," > #{item}</foreach>) </if> 
+        <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day >= #{startTime}]]></if> 
+        <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and log_day <= #{endTime}]]></if>   
+	</select>
+
+	<!-- 游戏数据统计 物品获取每日统计 -->
+	<select id="indexDay" parameterType="hashmap" resultType="hashmap">
+		select 
+			event_type as eventType
+			,sum(times) times
+			,goods_name as goodsName
+			,sum(count) count 
+			,log_day as logDay
+		from prop_gain
+         where 1=1
+         <if test="@Ognl@isNotBlank(goodName)">and goods_name =#{goodName}</if> 
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+         	<foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+               #{item}  
+            </foreach>  
+		</if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day<= #{endTime}]]></if>
+		group by log_day,event_type,goods_name
+		order by log_day desc,count desc 
+    </select>
+	 <select id="indexDayCount" parameterType="hashmap" resultType="int">
+	      select COUNT(DISTINCT log_day,event_type,goods_name) from prop_gain
+       	  where 1=1
+          <if test="@Ognl@isNotBlank(goodName)">and goods_name =#{goodName}</if> 
+          <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+          <foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+               #{item}  
+          </foreach>  
+		  </if> 
+          <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+          <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and log_day<= #{endTime}]]></if>
+	</select>
+</mapper>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="kuafu">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+				id,
+				serverid,
+				name,
+				ip,
+				port,
+				create_time as createTime
+		from kuafu 
+		where 1=1
+		<if test="@Ognl@isNotBlank(name)">and name like concat('%',#{name},'%')</if>
+		order by substr(serverid, 3)+0 asc 
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int" >
+		select count(*) from kuafu where 1=1
+	 	<if test="@Ognl@isNotBlank(name)">and name like concat('%',#{name},'%')</if>
+	</select>
+	
+	<select id="getServerIdBykuaFuId" resultType="string">
+		SELECT DISTINCT server_id FROM kuafu_servers WHERE kuafu_id in <foreach item="item" index="index" collection="list" open="(" separator="," close=")"> #{item}</foreach>
+	</select>
+	
+	<select id="getkuafuServeIdById" resultType="string">
+		SELECT serverid FROM kuafu WHERE id in <foreach item="item" index="index" collection="list" open="(" separator="," close=")"> #{item}</foreach>
+	</select>
+	
+	<select id="getServerByKuafuId" parameterType="string" resultType="string">
+		select server_id from kuafu_servers where kuafu_id=#{id} order by substr(server_id,3)+0 asc
+	</select>
+	
+	<select id="byId" parameterType="int" resultType="hashmap">
+		select 
+			id,
+			serverid,
+			name,
+			ip,
+			port
+		from kuafu 
+		where id = #{id}
+	</select>
+	
+	<insert id="insert" parameterType="hashmap" useGeneratedKeys="true" keyProperty="id">
+		insert into kuafu(
+			serverid,
+			name,
+			ip,
+			port,
+			create_Time
+		)
+		values(
+			#{serverid},
+			#{name},
+			#{ip},
+			#{port},
+			#{nowTime}
+		)
+	</insert>
+	<insert id="insertServers">
+		insert into kuafu_servers(
+			kuafu_id,
+			server_id,
+			game_db_url
+		) values
+		<foreach item="item" index="index" collection="serverIdList" separator=",">
+           (#{id}, #{item}, (SELECT game_db_url from game_server  where server_id = #{item}) )
+        </foreach>
+	</insert>
+
+	<update id="update" parameterType="hashmap">
+		update kuafu set  
+			serverid=#{serverid},
+			name=#{name},
+			ip=#{ip},  
+			port=#{port}
+		where id=#{id}
+	</update>
+	
+	<delete id="delete">
+		delete from kuafu where id in <foreach item="item" index="index" collection="list" open="(" separator="," close=")"> #{item}</foreach>
+	</delete>	
+	
+	<delete id="deleteServers">
+		delete from kuafu_servers where kuafu_id in <foreach item="item" index="index" collection="list" open="(" separator="," close=")">#{item} </foreach>
+	</delete>
+</mapper>

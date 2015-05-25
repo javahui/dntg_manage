@@ -1,0 +1,165 @@
+@charset "utf-8";
+
+/*search table*/
+.tbl_search {
+	width: 100%
+}
+
+.tbl_search td {
+	height: 30px
+}
+
+.input_search {
+	border: #ccc 1px solid;
+	height: 16px;
+	padding: 1px 0 0 3px;
+	width: 110px;
+}
+
+/*search table*/ /*operate table*/
+.tbl_operate {
+	width: 100%
+}
+
+.tbl_operate td {
+	height: 36px
+}
+
+.li_operate {
+	background: url(../../images/table/li.gif);
+	behavior: url(../../htc/li_operate.htc);
+	border: #b6dbef 1px solid;
+	color: highlight;
+	cursor: pointer;
+	float: left;
+	height: 24px;
+	line-height: 24px;
+	margin-right: 3px;
+	padding: 0 15px;
+}
+
+.li_operate:hover {
+	background: url(../../images/table/rgtlion.gif);
+	border: #d4bf0a 1px solid;
+	color: #000;
+}
+
+/*operate table*/ /*list table*/
+.tbl_list {
+	width: 100%
+}
+
+.tbl_list td {
+	border: #ccc 1px dashed;
+	height: 22px;
+	line-height: 22px;
+	text-align: center;
+}
+
+.tbl_list .left {
+	padding-left: 4px;
+	text-align: left;
+}
+
+.tbl_list .right {
+	padding-right: 4px;
+	text-align: right;
+}
+
+.tr_list_title {
+	/**
+	  *  background: url(../../images/table/li.gif) repeat-x;
+	*/
+	background-color: #326D99;
+	height: 22px;
+}
+
+.tr_list_title td {
+	border: #b6dbef 1px solid;
+	color: #333;
+	font-weight: bold;
+}
+
+.input_list {
+	border: #ccc 1px solid;
+	height: 16px;
+	padding: 1px 0 0 3px;
+	width: 70px;
+}
+
+.tbl_list .td_page_shift {
+	height: 24px;
+	line-height: 24px;
+	padding-right: 5px;
+	text-align: right;
+	width: 100%;
+}
+
+.slc_page_shift {
+	height: 18px
+}
+
+.input_page_shift {
+	border: #ccc 1px solid;
+	height: 16px;
+	padding-left: 3px;
+	width: 40px;
+}
+
+/*list table*/ /*edit table*/
+.tbl_edit {
+	width: 100%
+}
+
+.tbl_edit td {
+	border: #ccc 1px dashed;
+	height: 22px;
+	line-height: 22px;
+}
+
+.tbl_edit .left {
+	padding-left: 4px;
+	text-align: left;
+}
+
+.tbl_edit .right {
+	padding-right: 4px;
+	text-align: right;
+}
+
+.td_edit_title {
+	background: #aad3ee;
+	padding-left: 5px;
+}
+
+.td_edit_name {
+	background: #ecf3ff;
+	padding: 2px 5px 2px 0;
+	text-align: right;
+	width: 280px;
+}
+
+.td_edit_value {
+	padding: 2px 0 2px 5px;
+}
+
+.input_edit_value {
+	border: #ccc 1px solid;
+	height: 16px;
+	padding: 1px 0 0 3px;
+	width: 150px;
+}
+
+.input_edit_value_short {
+	border: #ccc 1px solid;
+	height: 16px;
+	padding: 1px 0 0 3px;
+	width: 50px;
+}
+
+.text_edit_value {
+	border: #ccc 1px solid;
+	height: 40px;
+	width: 300px;
+}
+/*edit table*/

@@ -1,0 +1,36 @@
+* {
+	PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+SPAN.fn {
+	MARGIN: 1.5em 0px 0.6em; DISPLAY: block; FONT-SIZE: 1.2em
+}
+#nav {
+	DISPLAY: none
+}
+.quicksearch {
+	DISPLAY: none
+}
+#docs {
+	MARGIN-LEFT: 0px
+}
+#docs LI {
+	PADDING-BOTTOM: 1em
+}
+A {
+	COLOR: black; TEXT-DECORATION: none
+}
+UL#docs LI {
+	BORDER-BOTTOM: 2px solid; MARGIN-BOTTOM: 1em
+}
+H2 {
+	MARGIN: 0.4em 0px
+}
+H3 {
+	MARGIN: 0.5em 0px 0.3em
+}
+H4 {
+	MARGIN: 0.4em 0px 0.2em
+}
+P {
+	MARGIN-BOTTOM: 1em
+}

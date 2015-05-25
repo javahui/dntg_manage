@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="actionRole">
+
+	<!-- 检验直接充值权限 -->
+	<select id="checkdDirectRecharge" parameterType="int" resultType="int">
+		SELECT COUNT(1) from action_role ar,user_role ur where ar.role_id=ur.role_id  and ar.action_id=7020 and  ur.user_id= #{Id}
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into action_role(action_id, role_id) values
+		<foreach item="item" index="index" collection="actionIds" separator=",">
+        	  (#{item}, #{roleId})
+        </foreach>
+	</insert>
+	
+	<insert id="insertRoleIds" parameterType="hashmap">
+		insert into action_role(action_id, role_id) values
+		<foreach item="item" index="index" collection="roleIds" separator=",">
+        	  (#{actionId}, #{item})
+        </foreach>
+	</insert>
+	
+	<delete id="deleteByRoleId" parameterType="int">
+		delete from action_role where role_id=#{roleId}
+	</delete>
+	
+	<delete id="deleteByActionId" parameterType="int">
+		delete from action_role where action_id = #{actionId}
+	</delete>
+</mapper>

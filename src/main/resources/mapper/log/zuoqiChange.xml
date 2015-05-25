@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="zuoqiChange">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			role_name as roleName,
+			goods_name as goodsName,
+			count(DISTINCT event_id) as eventCount,
+			sum(goods_count) as goodsCount,
+			sum(cost_yb) as costYb,
+			(rank - is_success) as beforeRank, 
+			rank as afterRank,
+			max(log_time) as lastTime
+		from zuoqi_change
+		where role_name = #{roleName}
+		<if test="@Ognl@isNotBlank(startTime)">and log_day <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and log_day <![CDATA[ <= ]]> #{endTime} </if>
+		GROUP BY log_hour,is_success,rank, goods_name
+		order by rank asc,is_success desc
+    </select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select 
+			COUNT(DISTINCT log_hour,is_success,rank, goods_name) 
+		from zuoqi_change
+		where role_name = #{roleName}
+		<if test="@Ognl@isNotBlank(startTime)">and log_day <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and log_day <![CDATA[ <= ]]> #{endTime} </if>
+    </select>
+</mapper>

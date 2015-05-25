@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="serverSort">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			id
+			,sort_name sortName
+			,order_num orderNum
+			from server_sort
+		where 1=1
+		 <if test="@Ognl@isNotBlank(id)">and id = #{id}</if> 
+		ORDER BY order_num asc, id desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(*)
+			from server_sort
+		where 1=1
+		 <if test="@Ognl@isNotBlank(id)">and id = #{id}</if> 
+		ORDER BY order_num asc, id desc
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into server_sort(
+			sort_name,
+			order_num,
+			id
+		)
+		values(
+			#{sortName},
+			#{orderNum},
+			#{id}
+		)
+	</insert>
+	
+	<select id="byId" parameterType="int" resultType="hashmap">
+		select
+			id,
+			sort_name sortName,
+			order_num orderNum
+		from server_sort
+		where id = #{id}
+	</select>
+	
+	<update id="update" parameterType="hashmap">
+		update server_sort 
+		set sort_name = #{sortName} ,
+			  order_num = #{orderNum}
+		where id = #{id}
+	</update>
+	
+	<delete id="delete" >
+		delete from server_sort where id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>	
+	
+	<select id="indexAllServer" parameterType="hashmap" resultType="hashmap">
+		select 
+		id
+		,sort_name sortName
+		,order_num orderNum
+		from server_sort
+		ORDER BY order_num asc, id desc
+	</select>
+</mapper>

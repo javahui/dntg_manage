@@ -1,0 +1,657 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="rechargeRecord">
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		select 
+			rc.user_guid as userGuid,
+			ur.`name` as roleName,
+			rc.order_id as orderId,
+			rc.recharge_type as rechargeType,
+			rc.money_type as moneyType,
+			rc.rmb as rmb,
+			rc.money_num as moneyNum,
+			rc.recharge_state as rechargeState,
+			rc.create_time as createTime
+		from user_role ur inner join recharge_record rc
+		ON ur.id=rc.user_role_id 
+		where 1=1
+		<if test="@Ognl@isNotBlank(orderId)">and rc.order_id =#{orderId}</if> 
+        <if test="@Ognl@isNotBlank(roleName)">and ur.`name` =#{roleName}</if> 
+        <if test="@Ognl@isNotBlank(userGuid)">and rc.user_guid =#{userGuid}</if> 
+        <if test="@Ognl@isNotBlank(rechargeType)">and rc.recharge_type =#{rechargeType}</if> 
+        <if test="@Ognl@isNotBlank(moneyType)">and rc.money_type =#{moneyType}</if> 
+       	<if test="@Ognl@isNotBlank(rechargeState)">and rc.recharge_state =#{rechargeState}</if> 
+        <if test="@Ognl@isNotBlank(startTime)">and date_format(rc.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(rc.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+         order by rc.create_time desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+	   select count(1)  from user_role ur inner join recharge_record rc
+	   ON ur.id=rc.user_role_id 
+	   where 1=1
+	   <if test="@Ognl@isNotBlank(orderId)">and rc.order_id =#{orderId}</if> 
+       <if test="@Ognl@isNotBlank(roleName)">and ur.`name` =#{roleName}</if> 
+       <if test="@Ognl@isNotBlank(userGuid)">and rc.user_guid =#{userGuid}</if> 
+       <if test="@Ognl@isNotBlank(rechargetType)">and rc.recharge_type =#{rechargetType}</if> 
+       <if test="@Ognl@isNotBlank(moneyType)">and rc.money_type =#{moneyType}</if> 
+       <if test="@Ognl@isNotBlank(rechargeState)">and rc.recharge_state =#{rechargeState}</if> 
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(rc.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(rc.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+
+	<!-- 玩家充值統計 -->
+	<select id="selectRechargeStatistics" parameterType="hashmap" resultType="hashmap">
+    	select temp.*,
+			(SELECT sum(lingshi) from user_account where user_account.user_guid = temp.userId) as lingshi
+		from (
+			select 
+				(select user_id from user_role where id=r.user_role_id) as userId,
+				(select name from user_role where id=r.user_role_id) as userName,
+				(select create_time from user_role where id=r.user_role_id) as userCreateTime,
+				count(*) as num,
+				sum(r.rmb) as moneyNum,
+				(select create_time from recharge_record t where t.user_role_id=r.user_role_id order by create_time limit 1) as firstTime,
+				(select create_time from recharge_record t where t.user_role_id=r.user_role_id order by create_time desc limit 1) as lastTime,
+				date_format(create_time,'%Y-%m-%d') as createTime
+			from recharge_record r
+			where r.money_type = 2 and r.recharge_state <![CDATA[<= ]]> 1 and r.recharge_type=1 and r.platform_type <![CDATA[ <> ]]> 'game'
+			GROUP BY userId
+		) temp
+		where 1=1
+		<if test="@Ognl@isNotBlank(userName)">and temp.userName = #{userName}</if>
+		<if test="@Ognl@isNotBlank(startTime)">and temp.createTime <![CDATA[ >= ]]> #{startTime}</if> 
+		<if test="@Ognl@isNotBlank(endTime)">and temp.createTime <![CDATA[ <= ]]> #{endTime}</if> 
+		<if test="@Ognl@isNotBlank(moneyMin)">and temp.moneyNum <![CDATA[ >= ]]> #{moneyMin}</if> 
+		<if test="@Ognl@isNotBlank(moneyMax)">and temp.moneyNum <![CDATA[ <= ]]> #{moneyMax}</if>
+		order by temp.moneyNum desc
+	</select>
+	<select id="selectRechargeStatisticsCount" parameterType="hashmap" resultType="int">
+		select count(1) from(
+			select temp.* from (
+				select 
+					(select name from user_role where id=r.user_role_id) as userName,
+					sum(r.money_num) as moneyNum,
+					date_format(create_time,'%Y-%m-%d') as createTime
+				from recharge_record r
+				where r.money_type = 2 and r.recharge_state <![CDATA[<= ]]> 1 and r.recharge_type=1 and r.platform_type <![CDATA[ <> ]]> 'game'
+				GROUP BY (select user_id from user_role where id=r.user_role_id) 
+			) temp
+			where 1=1
+			<if test="@Ognl@isNotBlank(userName)">and temp.userName = #{userName}</if>
+			<if test="@Ognl@isNotBlank(startTime)">and temp.createTime <![CDATA[ >= ]]> #{startTime}</if> 
+			<if test="@Ognl@isNotBlank(endTime)">and temp.createTime <![CDATA[ <= ]]> #{endTime}</if> 
+			<if test="@Ognl@isNotBlank(startMoney)">and temp.moneyNum <![CDATA[ >= ]]> #{startMoney}</if> 
+			<if test="@Ognl@isNotBlank(endMoney)">and temp.moneyNum <![CDATA[ <= ]]> #{endMoney}</if> 
+		) tt
+	</select>
+	
+<!-- 玩家充值統計Excel -->
+   <select id="selectRechargeStatisticsExcel" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+    	select temp.*,
+			(SELECT sum(lingshi) from user_account where user_account.user_guid = temp.userId) as lingshi
+		from (
+			select 
+				(select user_id from user_role where id=r.user_role_id) as userId,
+				(select name from user_role where id=r.user_role_id) as userName,
+				(select create_time from user_role where id=r.user_role_id) as userCreateTime,
+				count(*) as num,
+				sum(r.rmb) as moneyNum,
+				(select create_time from recharge_record t where t.user_role_id=r.user_role_id order by create_time limit 1) as firstTime,
+				(select create_time from recharge_record t where t.user_role_id=r.user_role_id order by create_time desc limit 1) as lastTime,
+				date_format(create_time,'%Y-%m-%d') as createTime
+			from recharge_record r
+			where r.money_type = 2 and r.recharge_state <![CDATA[<= ]]> 1 and r.recharge_type=1 and r.platform_type <![CDATA[ <> ]]> 'game'
+			GROUP BY userId
+		) temp
+		where 1=1
+		<if test="@Ognl@isNotBlank(userName)">and temp.userName = #{userName}</if>
+		<if test="@Ognl@isNotBlank(startTime)">and temp.createTime <![CDATA[ >= ]]> #{startTime}</if> 
+		<if test="@Ognl@isNotBlank(endTime)">and temp.createTime <![CDATA[ <= ]]> #{endTime}</if> 
+		<if test="@Ognl@isNotBlank(moneyMin)">and temp.moneyNum <![CDATA[ >= ]]> #{moneyMin}</if> 
+		<if test="@Ognl@isNotBlank(moneyMax)">and temp.moneyNum <![CDATA[ <= ]]> #{moneyMax}</if>
+		order by temp.moneyNum desc
+	</select>
+
+	<!--連續充值統計 -->
+	<select id="rechargeIntegration" parameterType="hashmap" resultType="hashmap">
+	    select a.user_guid user_guid,a.srmb srmb,a.cnt cnt,a.ctime ctime,
+			(select sum(rmb) from recharge_record where 
+				<![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]>
+			) allrmb from
+			(select user_guid, sum(rmb) srmb,count(user_guid) cnt,max(create_time) ctime  from recharge_record
+			where 
+			<![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+			<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime} ]]></if> 
+	        <if test="@Ognl@isNotBlank(endTime)">and<![CDATA[ create_time <= #{endTime} ]]></if> 
+			group by user_guid
+			) a
+			where 1=1
+			 <if test="@Ognl@isNotBlank(moneyMin)">and<![CDATA[ srmb >= #{moneyMin} ]]></if> 
+	         <if test="@Ognl@isNotBlank(moneyMax)">and<![CDATA[ srmb <= #{moneyMax} ]]></if>    
+			order by srmb desc
+	</select>
+	<select id="rechargeIntegrationCount" parameterType="hashmap" resultType="int">
+	   select  count(1)
+	   from(select user_guid, sum(rmb) srmb,count(user_guid) cnt,max(create_time) ctime  from recharge_record
+			where 
+			<![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+			<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime} ]]></if> 
+	        <if test="@Ognl@isNotBlank(endTime)">and<![CDATA[ create_time <= #{endTime} ]]></if> 
+			group by user_guid
+			) a
+			where 1=1
+			 <if test="@Ognl@isNotBlank(moneyMin)">and<![CDATA[ srmb >= #{moneyMin} ]]></if> 
+	         <if test="@Ognl@isNotBlank(moneyMax)">and<![CDATA[ srmb <= #{moneyMax} ]]></if>    
+			order by srmb desc
+	</select>
+
+	<!-- 連續充值統計Excel -->
+	 <select id="rechargeIntegrationExcel" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+	     select a.user_guid user_guid,a.cnt cnt,a.srmb srmb,a.srmb/(select sum(rmb) from recharge_record where 
+				<![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]>
+			) prmb,a.ctime ctime
+		 from(select user_guid, sum(rmb) srmb,count(user_guid) cnt,max(create_time) ctime  from recharge_record
+		 where 
+			<![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+			<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime} ]]></if> 
+	        <if test="@Ognl@isNotBlank(endTime)">and<![CDATA[ create_time <= #{endTime} ]]></if> 
+		 group by user_guid
+			) a
+		 where 1=1
+			 <if test="@Ognl@isNotBlank(moneyMin)">and<![CDATA[ srmb >= #{moneyMin} ]]></if> 
+	         <if test="@Ognl@isNotBlank(moneyMax)">and<![CDATA[ srmb <= #{moneyMax} ]]></if>    
+			order by srmb desc
+	 </select>
+ 
+	<!-- 充值相关查询  每日充值统计 -->
+	<select id="indexDay" parameterType="hashmap" resultType="hashmap" >
+		select 
+		    DATE_FORMAT(create_time,'%Y-%m-%d') createTime,
+		    count(DISTINCT user_guid) distCount,
+		    count(user_guid) allCount,
+		    sum(rmb) allRmb,
+		    sum(rmb)/count(DISTINCT user_guid) arpu
+	    from recharge_record 
+	    where
+	     <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	    GROUP BY createTime
+	    order by createTime desc
+	</select>
+	<select id="indexDayCount" parameterType="hashmap" resultType="int">
+    	select count(distinct DATE_FORMAT(create_time,'%Y-%m-%d') )
+	    from recharge_record 
+	    where money_type = 2 
+		and <![CDATA[recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+	
+	<select id="selectRecharge_ByDaysStatisticsExcel" parameterType="string" resultType="hashmap">
+	    select 
+		    count(DISTINCT user_guid) as distCount,
+		    sum(rmb) as allRmb
+	    from recharge_record
+	    where <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]>
+	    and date_format(create_time,'%Y-%m-%d') = #{time}
+	</select>
+	
+	<select id="selectRecharge_ByNewStatisticsExcel" parameterType="string" resultType="int">
+	    select 
+	    	count(a.user_guid) cnt
+	    from
+	    (
+	    	select user_guid,MIN(create_time) as mtime from recharge_record
+	    	where <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]>
+			GROUP BY user_guid
+	    )a 
+	    right join
+	    (
+	    	select create_time from recharge_record
+	    	where <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]>
+	     	AND date_format(create_time, '%Y-%m-%d') = #{time}
+	    )b on b.create_time=a.mtime
+	</select>
+	
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap" >
+		select 
+		    DATE_FORMAT(create_time,'%Y-%m-%d') dtime,
+		    count(DISTINCT user_guid) distCount,
+		    count(user_guid) allCount,
+		    sum(rmb) allRmb,
+		    sum(rmb)*10 allYb,
+		    sum(rmb)/count(DISTINCT user_guid) arpu
+	    from recharge_record 
+	    where
+	     <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	    GROUP BY dtime
+	    order by dtime desc
+	</select>
+
+	<!-- 充值相关查询  每日新增充值统计 -->
+	<select id="indexNewDay" parameterType="hashmap" resultType="hashmap" >
+	    select count(a.user_guid) cnt,DATE_FORMAT(b.create_time,'%Y-%m-%d')dtime,DATE_FORMAT((select start_time from server_info),'%Y-%m-%d') openTime
+	    from(select user_guid,MIN(create_time)mtime from recharge_record 
+	    where 
+	    <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+		group by user_guid
+	    )a 
+	    right join(select create_time from recharge_record where
+	     <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and create_time> #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and create_time< #{endTime}]]></if> 
+		)b on b.create_time=a.mtime 
+	    group by DATE_FORMAT(b.create_time,'%Y-%m-%d')
+	    ORDER BY dtime desc
+	</select>
+	<select id="indexNewDayCount" parameterType="hashmap" resultType="int">
+	    select count(*) from(select count(a.user_guid) cnt
+	    from(select user_guid,MIN(create_time)mtime from recharge_record 
+	    where 
+	    <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+	    )a 
+	    right join(select create_time from recharge_record where
+	     <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+       <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and create_time> #{startTime}]]></if> 
+       <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and create_time< #{endTime}]]></if> 
+	    )b on b.create_time=a.mtime 
+	    group by DATE_FORMAT(b.create_time,'%Y-%m-%d')) c
+	</select>
+	
+	<select id="excelNewIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap" >
+	    select 
+	    DATE_FORMAT(b.create_time,'%Y-%m-%d') dtime
+	    ,(dateDiff(DATE_FORMAT(b.create_time,'%Y-%m-%d'),DATE_FORMAT((select start_time from server_info),'%Y-%m-%d'))+1) dayCount
+	    ,count(a.user_guid) cnt
+	    from(select user_guid,MIN(create_time)mtime from recharge_record 
+	    where 
+	    <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+		group by user_guid
+	    )a 
+	    right join(select create_time from recharge_record where
+	     <![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and create_time> #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and create_time< #{endTime}]]></if> 
+		)b on b.create_time=a.mtime 
+	    group by DATE_FORMAT(b.create_time,'%Y-%m-%d')
+	    ORDER BY dtime desc
+	</select>
+	
+	<!-- 充值相关查询  充值分布统计 -->
+	<select id="indexDistribute" parameterType="hashmap" resultType="hashmap" >
+	    select sum(case when  rmb  between 1 and 99 then 1 else 0 end) as a1,
+  			sum(case when  rmb  between 100 and 499 then 1 else 0 end) as a2,
+  			sum(case when  rmb  between 500 and 999 then 1 else 0 end) as a3,
+  			sum(case when  rmb  between 1000 and 4999 then 1 else 0 end) as a4,
+  			sum(case when  rmb  between 5000 and 9999 then 1 else 0 end) as a5,
+  			sum(case when  rmb  >=10000 then 1 else 0 end) as a6,
+			sum(case when  rmb  >=0 then 1 else 0 end) cnt,
+			sum(case when  rmb  between 1 and 99 then 1 else 0 end)/sum(case when  rmb  >=0 then 1 else 0 end) as an1,
+  			sum(case when  rmb  between 100 and 499 then 1 else 0 end)/sum(case when  rmb  >=0 then 1 else 0 end) as an2,
+  			sum(case when  rmb  between 500 and 999 then 1 else 0 end)/sum(case when  rmb  >=0 then 1 else 0 end) as an3,
+  			sum(case when  rmb  between 1000 and 4999 then 1 else 0 end)/sum(case when  rmb  >=0 then 1 else 0 end) as an4,
+  			sum(case when  rmb  between 5000 and 9999 then 1 else 0 end)/sum(case when  rmb  >=0 then 1 else 0 end) as an5,
+  			sum(case when  rmb  >=10000 then 1 else 0 end)/sum(case when  rmb  >=0 then 1 else 0 end) as an6
+		from 
+		(select sum(rmb) rmb,count(DISTINCT user_guid) count from recharge_record
+	   where
+		<![CDATA[money_type = 2 and recharge_state <= 1 and recharge_type=1 and platform_type <> 'game']]>  
+       <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and create_time> #{startTime}]]></if> 
+       <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and create_time< #{endTime}]]></if> 
+		GROUP BY user_guid) b
+	</select>
+	
+	<!-- 得到前100名充值用户 -->
+	<select id="getTopOneHundredRechargeUser" parameterType="com.lingyu.dntg.bean.pojo.MingRenTangConfig" resultType="com.lingyu.dntg.bean.pojo.MingRenTangUser">
+		SELECT
+			a.user_role_id as userRoleId,
+			b.name as userRoleName,
+			b.platform as platformName,
+			b.server_id as serverId,
+			max(a.create_time) as lastTime,
+			sum(a.money_num) as num,
+			(select data from role_rank_data where user_role_id = a.user_role_id) as data
+		FROM
+			recharge_record a,
+			user_role b
+		WHERE
+			a.user_role_id = b.id
+			AND a.recharge_state <![CDATA[ <= ]]> 1
+			AND a.create_time <![CDATA[ >= ]]> #{startTime}
+			AND a.create_time <![CDATA[ <= ]]> #{finishTime}
+			group by a.user_role_id
+			having num <![CDATA[ >= ]]> #{yaoqiu}
+			order by num desc
+		limit 100
+	</select>
+	
+	<select id="vipLevelRmbDistribution" parameterType="hashmap" resultType="hashmap">
+		select
+			'免费' as level,
+			'0' as rankRmb,
+			(
+				select count(1) from user_role u where 1=1
+				<if test="@Ognl@isNotBlank(startTime)">and date_format(u.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+				<if test="@Ognl@isNotBlank(endTime)">and date_format(u.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+				<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+				<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+				<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+				<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			) 
+			- 
+			(
+				SELECT count(1) from recharge_record r,user_role u
+				where  <![CDATA[r.user_role_id = u.id and r.user_role_id=u.id and r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+				<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+				<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+				<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+				<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+				<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+				<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			) as num,
+			0 as rmb
+		UNION ALL
+		SELECT
+			'V0-1' as level,
+			'0~10' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb <= 10]]>) temp
+		UNION ALL
+		SELECT
+			'V0-2' as level,
+			'11~30' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 11  and rmb <= 30]]>) temp
+		union ALL
+		SELECT
+			'V0-3' as level,
+			'31~99' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 31 and rmb <= 99]]>) temp
+		union ALL
+		SELECT
+			'V1' as level,
+			'100~199' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 100 and rmb <= 199]]>) temp
+		union ALL
+		SELECT
+			'V2' as level,
+			'200~299' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 200 and rmb <= 299]]> ) temp
+		union ALL
+		SELECT
+			'V3' as level,
+			'300~499' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 300 and rmb <= 499]]>) temp
+		union ALL
+		SELECT
+			'V4' as level,
+			'500~999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 500 and rmb <= 999]]>) temp
+		union ALL
+		SELECT
+			'V5' as level,
+			'1000~1999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 1000 and rmb <= 1999]]>) temp
+		union ALL
+		SELECT
+			'V6' as level,
+			'2000~2999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 2000 and rmb <= 2999]]>) temp
+		union ALL
+		SELECT
+			'V7' as level,
+			'3000~4999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 3000 and rmb <= 4999]]>) temp
+		union ALL
+		SELECT
+			'V8' as level,
+			'5000~9999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 5000 and rmb <= 9999]]>) temp
+		union ALL
+		SELECT
+			'V9' as level,
+			'10000~19999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 10000 and rmb <= 19999]]> ) temp
+		union ALL
+		SELECT
+			'V10' as level,
+			'20000~49999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 20000 and rmb <= 49999]]>) temp
+		union ALL
+		SELECT
+			'V10+' as level,
+			'50000~99999' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select 
+				user_role_id as userRoleId,
+				sum(rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 50000 and rmb <= 99999]]>) temp
+		union ALL
+		SELECT
+			'V10++' as level,
+			'100000+' as rankRmb,
+			count(1) as num,
+			sum(rmb) as rmb
+		FROM (
+			select
+				r.user_role_id as userRoleId,
+				sum(r.rmb) as rmb
+			from recharge_record r,user_role u
+			WHERE <![CDATA[ r.user_role_id = u.id AND r.money_type = 2 and r.recharge_state <= 1 and r.recharge_type=1 and r.platform_type <> 'game']]>
+			<if test="@Ognl@isNotBlank(startTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+			<if test="@Ognl@isNotBlank(endTime)">and date_format(r.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+			<if test="@Ognl@isNotBlank(startDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ >= ]]> #{startDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(endDiffCreateDay)"> AND DATEDIFF(NOW(),u.create_time) <![CDATA[ <= ]]> #{endDiffCreateDay}</if>
+			<if test="@Ognl@isNotBlank(startOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ >= ]]> #{startOnlineDay}</if>
+			<if test="@Ognl@isNotBlank(endOnlineDay)"> AND DATEDIFF(NOW(),FROM_UNIXTIME(u.online_time/1000)) <![CDATA[ <= ]]> #{endOnlineDay}</if>
+			GROUP BY user_role_id
+			HAVING <![CDATA[rmb >= 100000]]>) temp 
+	</select>
+</mapper>

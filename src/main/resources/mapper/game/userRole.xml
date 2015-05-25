@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="userRole">
+
+	<select id="findAll" parameterType="hashmap" resultType="hashmap">
+		SELECT *
+		FROM user_role WHERE name = #{name} and id=#{id}
+	</select>
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		SELECT
+			a.id,
+			a.user_id userId,
+			a.name name,
+			a.job job,
+			a.sex sex,
+			a.level level,
+			a.exp exp,
+			from_unixtime(a.online_time/1000) onlineTime,
+			from_unixtime(a.offline_time/1000) offlineTime,
+			a.create_time createTime,
+			a.server_id as serverId,
+			b.feng_hao fenghaoState,
+			b.jin_yan jinYanState
+		from user_role a
+		left join gm_user_state b on a.id = b.user_role_id
+		WHERE 1=1
+		<if test="@Ognl@isNotBlank(userId)">and a.user_id like concat('%',#{userId},'%') </if>
+		<if test="@Ognl@isNotBlank(name)">and a.name like concat('%',#{name},'%') </if>
+		<if test="@Ognl@isNotBlank(startLevel)">and <![CDATA[ a.level >= #{startLevel}]]></if>
+		<if test="@Ognl@isNotBlank(endLevel)">and <![CDATA[ a.level <= #{endLevel}]]></if>
+		order by a.level desc,createTime desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		SELECT count(1) FROM user_role a
+		WHERE 1=1
+		<if test="@Ognl@isNotBlank(userId)">and a.user_id like concat('%',#{userId},'%') </if>
+		<if test="@Ognl@isNotBlank(name)">and a.name like concat('%',#{name},'%') </if>
+		<if test="@Ognl@isNotBlank(startLevel)">and <![CDATA[ a.level >= #{startLevel}]]></if>
+		<if test="@Ognl@isNotBlank(endLevel)">and <![CDATA[ a.level <= #{endLevel}]]></if>
+	</select>
+
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+		SELECT
+			a.user_id userId,
+			a.name name,
+			a.job job,
+			case when a.sex='0' then "男" when a.sex='1' then "女" end as sex,
+			a.level level,
+			a.exp exp,
+			from_unixtime(a.online_time/1000) onlineTime,
+			from_unixtime(a.offline_time/1000) offlineTime,
+			a.create_time createTime,
+			a.server_id as serverId,
+			case when b.feng_hao='1' then "封号" else "未封号" end as fenghaoState,
+			case when b.jin_yan='1' then "禁言" else "未禁言" end as jinYanState
+		from user_role a
+		left join gm_user_state b on a.id = b.user_role_id
+		WHERE 1=1
+		<if test="@Ognl@isNotBlank(userId)">and a.user_id like concat('%',#{userId},'%') </if>
+		<if test="@Ognl@isNotBlank(name)">and a.name like concat('%',#{name},'%') </if>
+		<if test="@Ognl@isNotBlank(startLevel)">and <![CDATA[ a.level >= #{startLevel}]]></if>
+		<if test="@Ognl@isNotBlank(endLevel)">and <![CDATA[ a.level <= #{endLevel}]]></if>
+		order by a.level desc,createTime desc
+	</select>
+
+	<!-- 角色信息 详细信息 -->
+	<select id="show" parameterType="int" resultType="hashmap">
+		select
+		a.id id
+		,a.user_id as userId
+		,a.level level
+		,a.name name
+		,a.create_time as createTime
+		,a.job job
+		,a.online_time onlineTime
+		,a.sex sex
+		,a.offline_time offlineTime
+		,b.lingshi lingshi
+		,c.bind_lingshi bindLingshi
+		,c.tongqian tongqian
+		from user_role a, user_account b, role_account c 
+		where a.user_id = b.user_guid 
+		and a.server_id = b.server_id 
+		and a.id = c.user_role_id
+		and a.id = #{id}
+	</select>
+
+	<!-- 游戏数据统计 角色等级区间统计 -->
+	<select id="roleLevelRange" parameterType="int" resultType="hashmap">
+		select
+		Case when floor((level-1)/10)=0 then "1-10"
+		when floor((level-1)/10)=1 then "11-20"
+		when floor((level-1)/10)=2 then "21-30"
+		when floor((level-1)/10)=3 then "31-40"
+		when floor((level-1)/10)=4 then "41-50"
+		when floor((level-1)/10)=5 then "51-60"
+		when floor((level-1)/10)=6 then "61-70"
+		when floor((level-1)/10)=7 then "71-80"
+		when floor((level-1)/10)=8 then "81-90"
+		when floor((level-1)/10)=9 then "91-100"
+		when floor((level-1)/10)=10 then "101-110"
+		when floor((level-1)/10)=11 then "111-120" end as levelInterval,
+		count(*) roleCount
+		from user_role
+		group by floor((level-1)/10)
+		union all
+		select
+		"总人数",
+		count(*) roleCount
+		from user_role
+	</select>
+
+	<!-- 游戏数据统计 玩家全等级人数统计 -->
+	<select id="roleLevelRangeByAllLevel" parameterType="hashmap"
+		resultType="hashmap">
+		select level
+		,count(id) as cnt
+		,count(id)*100/(select count(id) from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		) as lv_cnt
+		,(select count(id) from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		) as allCount
+		from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		group by level
+		order by level desc, create_time desc
+	</select>
+	<select id="roleLevelRangeByAllLevelCount" parameterType="hashmap"
+		resultType="int">
+		select COUNT(DISTINCT level)
+		from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+	</select>
+
+	<!-- 游戏数据统计 创建时间人数统计 -->
+	<select id="createTimeRole" parameterType="hashmap" resultType="hashmap">
+		select date_format(create_time,'%Y-%m-%d') as createTime
+		,count(id) as cnt
+		,count(id)*100/(select count(id) from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		) as ct_cnt
+		,(select count(id) from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		) allCount
+		from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		group by date_format(create_time,'%Y-%m-%d')
+		order by date_format(create_time,'%Y-%m-%d') desc
+	</select>
+	<select id="createTimeRoleCount" parameterType="hashmap"
+		resultType="int">
+		select count(*) from
+		(select date_format(create_time,'%Y-%m-%d') as
+		createTime
+		from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		group by createTime
+		) a
+	</select>
+
+	<!-- 游戏数据统计 玩家保有率统计 -->
+	<select id="playerLostReport" parameterType="hashmap" resultType="hashmap">
+		select * from
+		(select date_format(#{startTime},'%Y-%m-%d') the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 1 day),'%Y-%m-%d')
+		the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 2 day),'%Y-%m-%d')
+		the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 3 day),'%Y-%m-%d')
+		the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 4 day),'%Y-%m-%d')
+		the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 5 day),'%Y-%m-%d')
+		the_date from dual
+		union
+		select date_format(DATE_ADD(#{startTime},INTERVAL 6 day),'%Y-%m-%d')
+		the_date from dual) as tb4
+		left join
+		(select cdate
+		,d,d1/d*100 d1,d2/d*100 d2,d3/d*100 d3,d4/d*100 d4,d5/d*100 d5,d6/d*100
+		d6,d7/d*100 d7 from
+		(select cdate,
+		(select count(id) as d1 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate) d,
+		(select count(id) as d1 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate and
+		DATEDIFF(log_update_time,cdate)>=1) d1,
+		(select count(id) as d2 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate and
+		DATEDIFF(log_update_time,cdate)>=2) d2,
+		(select count(id) as d3 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate and
+		DATEDIFF(log_update_time,cdate)>=3) d3,
+		(select count(id) as d4 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate and
+		DATEDIFF(log_update_time,cdate)>=4) d4,
+		(select count(id) as d5 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate and
+		DATEDIFF(log_update_time,cdate)>=5) d5,
+		(select count(id) as d6 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate and
+		DATEDIFF(log_update_time,cdate)>=6) d6,
+		(select count(id) as d7 from user_role where
+		date_format(create_time,'%Y-%m-%d')=cdate and
+		DATEDIFF(log_update_time,cdate)>=7) d7
+		from(
+		select date_format(create_time,'%Y-%m-%d') as cdate from user_role
+		where 1=1
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]>
+		</if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ create_time <= #{endTime}]]>
+		</if>
+		group by cdate
+		) as tb1
+		) as tb2
+		) as tb3 on tb3.cdate=tb4.the_date
+	</select>
+
+	<select id="selectName" resultType="string">
+		SELECT name FROM user_role WHERE name in <foreach item="item" index="index" collection="list" open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+	<select id="selectIdsByNames" resultType="string">
+		SELECT id FROM user_role WHERE name in (<foreach item="item" index="index" collection="list" separator=",">#{item}</foreach>)
+	</select>
+
+	<select id="selectPlayer" resultType="com.lingyu.dntg.bean.vo.PlayerVo">
+		SELECT
+		id as playerId,
+		user_id as playerAccount,
+		name as playerName
+		FROM user_role WHERE name in
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">#{item}</foreach>
+	</select>
+
+	<select id="indexDiaglog" parameterType="hashmap" resultType="hashmap">
+		SELECT
+			ur.id,
+			ur.user_id as userId,
+			ur.name,
+			ur.level,
+			(select vip_level from rank_vip where  user_role_id= ur.id) as vipLevel
+		FROM user_role ur
+		Where 1=1
+		<if test="@Ognl@isNotBlank(userId)">and user_id like concat('%',#{userId},'%') </if>
+		<if test="@Ognl@isNotBlank(name)">and name like concat('%',#{name},'%') </if>
+		<if test="@Ognl@isNotBlank(startLevel)">and level <![CDATA[ >= ]]>#{startLevel} </if>
+		<if test="@Ognl@isNotBlank(endLevel)">and level <![CDATA[ <= ]]>#{endLevel} </if>
+		<if test="@Ognl@isNotBlank(startVipLevel)">and (select vip_level from rank_vip where  user_role_id= ur.id) <![CDATA[ >= ]]>#{startVipLevel} </if>
+		<if test="@Ognl@isNotBlank(endVipLevel)">and (select vip_level from rank_vip where  user_role_id= ur.id) <![CDATA[ <= ]]>#{endVipLevel} </if>
+	</select>
+
+	<select id="existName" parameterType="string" resultType="string">
+		SELECT id FROM user_role where name = #{name}
+	</select>
+	
+	<select id="getUserIdById" parameterType="string" resultType="string">
+		SELECT user_id FROM user_role where id = #{id}
+	</select>
+	
+	<select id="getServerIdById" parameterType="string" resultType="string">
+		SELECT server_id FROM user_role where id = #{id}
+	</select>
+
+	<select id="selectIdByName" parameterType="string" resultType="string">
+		SELECT user_id FROM user_role where name in 	( <foreach collection="userNames" item="item" index="index" separator="," >#{item}</foreach> )
+	</select>
+
+	<!-- 今天创建人数 -->
+	<select id="getTodayCreaterCount" resultType="int">
+		SELECT count(1)
+		from user_role where date_format(create_time,'%Y-%m-%d') =
+		date_format(now(),'%Y-%m-%d')
+	</select>
+
+	
+
+	<!-- 查询角色的好友列表 -->
+	<select id="getRoleFriend" resultType="hashmap">
+	select 
+		a.id
+		,a.user_id userId
+		,a.name
+		,a.job
+		,a.sex
+		,a.exp
+		,a.level
+		,a.face
+		,a.zhenqi
+		,a.create_time createTime
+		,a.online_time onlineTime
+		,a.offline_time offlineTime
+		,a.server_id serverId
+		from user_role a,
+			 role_friend b
+		where a.id = b.friend_id
+		and b.user_role_id = #{id}
+	</select>
+
+	<!-- 查询角色的敌人列表 -->
+	<select id="getRoleFoe" resultType="hashmap">
+	select 
+		a.id
+		,a.user_id userId
+		,a.name
+		,a.job
+		,a.sex
+		,a.exp
+		,a.level
+		,a.face
+		,a.zhenqi
+		,a.create_time createTime
+		,a.online_time onlineTime
+		,a.offline_time offlineTime
+		,a.server_id serverId
+		from user_role a,
+			 role_foe b
+		where a.id = b.foe_id
+		and b.user_role_id = #{id}
+	</select>
+
+	<select id="byId" resultType="hashmap">
+	select 
+		id
+		,user_id userId
+		from user_role
+		where user_id = #{userId}
+	</select>
+
+	<select id="createCountList"  parameterType="string" resultType="int">
+		select count(1) from user_role 
+		where DATE_FORMAT(create_time,'%Y-%m-%d') = #{time}
+	</select>
+</mapper>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="userForbid">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select
+			a.user_id userId
+			,a.is_can_use isCanUse
+			,a.is_can_speak isCanSpeak
+			,a.add_msg addMsg
+			,a.user_name userName 
+			,a.log_time logTime
+			,a.server_id serverId
+			,(select server_name from game_server b where a.server_id = b.server_id) as serverName
+		from user_forbid a
+		where 1=1
+		<if test="@Ognl@isNotBlank(userId)">and a.user_id like concat('%', #{userId}, '%') </if> 
+		<if test="status == 'fengHao'">and a.is_can_use = 1</if>
+		<if test="status == 'jinYan'">and a.is_can_speak = 1</if>
+	 	<if test="@Ognl@isNotBlank(startTime)">and date_format(a.log_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(a.log_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		<if test="sessionUser.allServer == false" >
+			and a.server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+		order by a.log_time desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(*) from user_forbid where 1=1
+		<if test="@Ognl@isNotBlank(userId)">and user_id like concat('%', #{userId}, '%') </if> 
+		<if test="status == 'fengHao'">and is_can_use = 1</if>
+		<if test="status == 'jinYan'">and is_can_speak = 1</if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(log_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(log_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		<if test="sessionUser.allServer == false" >
+			and server_id in (<foreach item="item" index="index" collection="sessionUser.ownerServerIdList"  separator=",">  #{item}</foreach>)
+		</if>
+	</select>
+
+	<insert id="insert" parameterType="hashmap">		
+    		insert into user_forbid (
+	    			user_id,
+	    			is_can_use,
+	    			is_can_speak,
+	    			log_time,
+    				server_id,
+	    			user_name,
+	    			create_by
+	    		)values(
+    			  	#{userId},
+	    			#{isCanUse},
+	    			#{isCanSpeak},
+	    			now(),
+	    			#{currentServerId},
+	    			#{sessionUser.userName},
+	    			#{sessionUser.id}
+    			  )
+	</insert>
+	
+	<insert id="batchInsert" parameterType="hashmap">		
+    			insert into user_forbid
+	    			 (server_id
+	    			 ,user_id
+	    			 ,add_msg
+	    			 ,log_time
+	    			 ,user_name
+	    			 ,create_by
+	    			 ,<if test="forbidType == 'fengHao'">is_can_use</if><if test="forbidType == 'jinYan'">is_can_speak</if>)
+    			  values
+			<foreach collection="userIds" item="item" index="index"  separator=",">
+				( #{serverId}
+				, #{item}
+				, #{addMsg}
+				, date_format(#{nowTime},'%Y-%m-%d')
+				, #{SessionUser.userName}
+				, #{SessionUser.loginName}
+				, 1)
+			</foreach>
+	</insert>
+	
+	<update id="userForbidUseBan" parameterType="hashmap">
+		update user_forbid 
+		   set is_can_use = 1
+		where user_id = #{userId}
+	</update>
+		
+	<update id="userForbidUse" parameterType="hashmap">
+		update user_forbid 
+		   set is_can_use = 0
+		where user_id = #{userId}
+	</update>	
+	
+	<update id="userForbidSpeakBan" parameterType="hashmap">
+		update user_forbid 
+		   set is_can_speak = 1
+		where user_id = #{userId}
+	</update>
+		
+	<update id="userForbidSpeak" parameterType="hashmap">
+		update user_forbid 
+		   set is_can_speak = 0
+		where user_id = #{userId}
+	</update>
+	
+	<update id="updateUserForbidUse" parameterType="hashmap">
+		update user_forbid  set is_can_use = #{isCanUse} where user_id = #{userId}  and server_id =#{serverId}
+	</update>	
+		
+	<update id="updateUserForbidSpeak" parameterType="hashmap">
+		update user_forbid set is_can_speak = #{isCanSpeak} where user_id = #{userId}  and server_id =#{serverId}
+	</update>
+</mapper>

@@ -1,0 +1,237 @@
+* {
+	PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+HTML {
+	WIDTH: 100%; FONT-FAMILY: Arial; BACKGROUND: url(images/hdr_bkg.gif) repeat-x 0px 0px; HEIGHT: 100%; COLOR: #444444; FONT-SIZE: 14px; OVERFLOW: hidden
+}
+BODY {
+	WIDTH: 100%; FONT-FAMILY: Arial; BACKGROUND: url(images/hdr_bkg.gif) repeat-x 0px 0px; HEIGHT: 100%; COLOR: #444444; FONT-SIZE: 14px; OVERFLOW: hidden
+}
+* HTML {
+	HEIGHT: 99%
+}
+* BODY {
+	HEIGHT: 99%
+}
+H1 {
+	MARGIN: 0px 0px 0px 1.5em; HEIGHT: 85px
+}
+H1 A IMG {
+	BORDER-BOTTOM-STYLE: none; BORDER-LEFT-STYLE: none; BORDER-TOP-STYLE: none; BORDER-RIGHT-STYLE: none
+}
+#header {
+	COLOR: #fff; MARGIN-LEFT: 2em; FONT-SIZE: 2em; FONT-WEIGHT: bold; TOP: 30px; LEFT: 231px
+}
+#header SPAN {
+	COLOR: white; FONT-SIZE: 0.6em
+}
+H2 {
+	MARGIN: 0.5em; FONT-SIZE: 1.6em
+}
+H3 {
+	MARGIN: 0.4em 0px; FONT-SIZE: 1.2em
+}
+H4 {
+	MARGIN: 0.35em 0px; FONT-SIZE: 1em
+}
+H1 {
+	POSITION: absolute
+}
+#content {
+	POSITION: absolute
+}
+#nav {
+	POSITION: absolute
+}
+#docs {
+	POSITION: absolute
+}
+#header {
+	POSITION: absolute
+}
+#content {
+	RIGHT: 0px !important; LEFT: 0px !important
+}
+#content {
+	BOTTOM: 0px !important; BACKGROUND: #666; TOP: 85px !important
+}
+#nav {
+	PADDING-BOTTOM: 5px; LIST-STYLE-TYPE: none; PADDING-LEFT: 5px; BOTTOM: 0px; PADDING-RIGHT: 5px; BACKGROUND: #fff; OVERFLOW: auto; PADDING-TOP: 5px; TOP: 0px
+}
+#docs {
+	PADDING-BOTTOM: 5px; LIST-STYLE-TYPE: none; PADDING-LEFT: 5px; BOTTOM: 0px; PADDING-RIGHT: 5px; BACKGROUND: #fff; OVERFLOW: auto; PADDING-TOP: 5px; TOP: 0px
+}
+* HTML #nav {
+	HEIGHT: 90%
+}
+* HTML #docs {
+	HEIGHT: 90%
+}
+#nav {
+	POSITION: absolute; WIDTH: 340px; OVERFLOW: auto; LEFT: 0px
+}
+#docs {
+	POSITION: absolute; OVERFLOW: auto; RIGHT: 0px; LEFT: 350px
+}
+UL#docs LI {
+	BORDER-BOTTOM: 2px solid; PADDING-BOTTOM: 1em; MARGIN: 2em 1em
+}
+UL#docs LI SPAN.tooltip {
+	BORDER-BOTTOM: #666 1px dashed
+}
+UL#docs LI A.name {
+	FONT-WEIGHT: bold; TEXT-DECORATION: none
+}
+UL#docs LI SPAN.arg-type {
+	COLOR: #666
+}
+UL#docs SPAN.fn {
+	FONT-FAMILY: Courier
+}
+#tooltip {
+	BORDER-BOTTOM: black 1px solid; TEXT-ALIGN: left; BORDER-LEFT: black 1px solid; PADDING-BOTTOM: 4px; PADDING-LEFT: 4px; PADDING-RIGHT: 4px; MAX-WIDTH: 25em; BACKGROUND: #fff; BORDER-TOP: black 1px solid; BORDER-RIGHT: black 1px solid; PADDING-TOP: 4px
+}
+#tooltip H3 {
+	MARGIN: 0px; FONT-FAMILY: Arial; FONT-SIZE: 12px; FONT-WEIGHT: normal
+}
+#docs LI DIV.more {
+	MARGIN-TOP: 5px; MARGIN-LEFT: 2em
+}
+#docs LI DIV.example {
+	MARGIN-TOP: 15px; BORDER-TOP: #ddd 1px solid
+}
+#docs LI DIV.example H5 {
+	MARGIN: 10px 0px 0px; FONT-SIZE: 16px
+}
+#docs LI DIV.example PRE {
+	PADDING-BOTTOM: 5px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; BACKGROUND: #eee; COLOR: #000; FONT-SIZE: 0.8em; PADDING-TOP: 5px
+}
+P.raw {
+	TEXT-ALIGN: right; MARGIN: 5px auto; WIDTH: 600px; COLOR: #fff; FONT-SIZE: 11px
+}
+P.raw A {
+	COLOR: #fff
+}
+.tabs-hide {
+	DISPLAY: none
+}
+.tabs-nav {
+	BORDER-BOTTOM: black 1px solid
+}
+.tabs-nav LI {
+	BORDER-BOTTOM: black 1px solid; BORDER-LEFT: black 1px solid; LINE-HEIGHT: 110%; DISPLAY: inline; BORDER-TOP: black 1px solid; BORDER-RIGHT: black 1px solid
+}
+.tabs-nav LI A {
+	PADDING-BOTTOM: 0px; PADDING-LEFT: 10px; PADDING-RIGHT: 10px; COLOR: black; FONT-WEIGHT: bold; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.tabs-nav LI.tabs-selected {
+	BORDER-BOTTOM: white 1px solid
+}
+#navQS {
+	MARGIN-BOTTOM: 1em
+}
+#mainQS {
+	MARGIN-TOP: 4em; PADDING-LEFT: 2em; FLOAT: right; MARGIN-RIGHT: 2em
+}
+#mainQS LABEL {
+	COLOR: white
+}
+#nav .navsub H3 {
+	DISPLAY: block
+}
+.js #nav .navsub H3 {
+	DISPLAY: none
+}
+#nav .navsub .treecontrol {
+	DISPLAY: none
+}
+.js #nav .navsub#navCat .treecontrol {
+	MARGIN-TOP: 2em; DISPLAY: block
+}
+#nav LI {
+	MARGIN-LEFT: 1em
+}
+#nav DIV LI A {
+	FONT-FAMILY: monospace; COLOR: blue; TEXT-DECORATION: none
+}
+#nav LI.indent2 {
+	PADDING-LEFT: 1em
+}
+#nav UL.treeview {
+	PADDING-BOTTOM: 0px; LIST-STYLE-TYPE: none; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+.treeview UL {
+	PADDING-BOTTOM: 0px; LIST-STYLE-TYPE: none; MARGIN: 0px; PADDING-LEFT: 0px; PADDING-RIGHT: 0px; PADDING-TOP: 0px
+}
+#nav UL.treeview LI {
+	PADDING-BOTTOM: 0.1em; LINE-HEIGHT: 90%; MARGIN-LEFT: 0em
+}
+#nav .treecontrol {
+	MARGIN-BOTTOM: 5px
+}
+#nav .treecontrol A {
+	BORDER-BOTTOM: black 1px dotted; BORDER-LEFT: black 1px dotted; PADDING-BOTTOM: 0px; MARGIN: 5px; PADDING-LEFT: 5px; PADDING-RIGHT: 5px; BORDER-TOP: black 1px dotted; BORDER-RIGHT: black 1px dotted; TEXT-DECORATION: none; PADDING-TOP: 0px
+}
+.treeview LI {
+	Z-INDEX: 10; POSITION: relative; PADDING-BOTTOM: 3px; MARGIN: 0px; PADDING-LEFT: 20px; PADDING-RIGHT: 0px; PADDING-TOP: 4px
+}
+.treeview LI {
+	BACKGROUND: url(images/tv-item.gif) no-repeat 0px 0px
+}
+.treeview .collapsable {
+	BACKGROUND-IMAGE: url(images/tv-collapsable.gif)
+}
+.treeview .expandable {
+	BACKGROUND-IMAGE: url(images/tv-expandable.gif)
+}
+.treeview .last {
+	BACKGROUND-IMAGE: url(images/tv-item-last.gif)
+}
+.treeview .lastCollapsable {
+	BACKGROUND-IMAGE: url(images/tv-collapsable-last.gif)
+}
+.treeview .lastExpandable {
+	BACKGROUND-IMAGE: url(images/tv-expandable-last.gif)
+}
+>  >  >  >  >  >  > .r2364 .javascript .mlcom {
+	COLOR: #4040c2
+}
+.javascript .com {
+	COLOR: green
+}
+.javascript .regexp {
+	COLOR: maroon
+}
+.javascript .string {
+	COLOR: teal
+}
+.javascript .keywords {
+	COLOR: navy; FONT-WEIGHT: bold
+}
+.javascript .jquery {
+	COLOR: navy; FONT-WEIGHT: bold
+}
+.javascript .global {
+	COLOR: blue
+}
+.javascript .numbers {
+	COLOR: red
+}
+.html .tag {
+	COLOR: navy; FONT-WEIGHT: bold
+}
+.html .aname {
+	COLOR: purple
+}
+.html .avalue {
+	COLOR: fuchsia
+}
+.html .mlcom {
+	COLOR: green
+}
+.html .entity {
+	COLOR: teal
+}
+CODE {
+	PADDING-BOTTOM: 0pt; PADDING-LEFT: 0pt; PADDING-RIGHT: 0pt; FONT-SIZE: 108%; PADDING-TOP: 0pt
+}

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleLogin">
+
+	<!-- 游戏数据统计   玩家登陆统计 -->
+	<select id="playerLogin" parameterType="hashmap" resultType="hashmap">
+		select b.d d,b.dlcs s,b.dldlyh c,c.dldlip i from
+			(select DATE_FORMAT(log_time,'%Y-%m-%d') d,count(user_role_id) dlcs,count(DISTINCT user_role_id) dldlyh 
+			 from role_login 
+			 where 1=1
+			 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime}]]> </if> 
+		 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime}]]>  </if>
+			 GROUP BY d
+			) b 
+			left join
+			(
+				select a.d,count(DISTINCT a.ip) dldlip from 
+				(
+					select DATE_FORMAT(log_time,'%Y-%m-%d') d,ip from role_login 
+				where 1=1
+				 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime}]]> </if> 
+			 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime}]]>  </if>
+				GROUP BY d,user_role_id
+				) a
+			group by a.d
+			) c on b.d = c.d
+		order by  b.d desc
+	</select>
+	<select id="playerLoginCount" parameterType="hashmap" resultType="int">
+		 select count(*) 
+		 from(select DATE_FORMAT(log_time,'%Y-%m-%d') d 
+		 		from role_login
+				where 1=1
+				 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime}]]> </if> 
+			 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime}]]>  </if>
+		 	  group by d) tb2
+	</select>
+	
+	<select id="loginGroupList" parameterType="string" resultType="hashmap">
+		select
+			(SELECT count(DISTINCT user_role_id) FROM role_login WHERE date_format(log_time,'%Y-%m-%d') = #{time}) as dcount,
+			(SELECT count(DISTINCT user_role_id) FROM role_login WHERE date_format(log_time,'%Y-%m-%d') = date_sub(#{time}, INTERVAL 1 day)) as lsdcount
+	</select>
+</mapper>

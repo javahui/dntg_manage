@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="systemEmail">
+
+	<!--系统邮件列表 -->
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		SELECT
+			id,
+			server_id as serverId,
+			receiver_names receiverNames,
+			title,
+			content,
+			attachments,
+			jb,
+			yb,
+			delay_hours as delayHours,
+			create_time as createTime,
+			user_name as userName,
+			check_name as checkName,
+			global_send as globalSend,
+			state
+		FROM system_email
+		where global_send is not null
+		<if test="@Ognl@isNotBlank(state)">and state = #{state} </if>
+		<if test="@Ognl@isNotBlank(title)">and title like concat('%',#{title},'%') </if>
+		<if test="@Ognl@isNotBlank(globalSend)">and global_send = #{globalSend} </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		<if test="sessionUser.allServer == false">
+			and create_by in (<foreach item="item" index="index" collection="sessionUser.roleUserIdList" separator="," >#{item}</foreach>)
+		</if>
+		order by create_time desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		SELECT count(1) FROM system_email where global_send is not null
+		<if test="@Ognl@isNotBlank(state)">and state = #{state} </if>
+		<if test="@Ognl@isNotBlank(title)">and title like concat('%',#{title},'%') </if>
+		<if test="@Ognl@isNotBlank(globalSend)">and global_send = #{globalSend} </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		<if test="sessionUser.allServer == false">
+			and create_by in (<foreach item="item" index="index" collection="sessionUser.roleUserIdList" separator="," >#{item}</foreach>)
+		</if>
+	</select>
+
+	<!--系统邮件审批列表 -->
+	<select id="indexAudit" parameterType="hashmap" resultType="hashmap">
+		select 
+			id,
+			server_id as serverId,
+			receiver_names as receiverNames,
+			title,
+			content,
+			attachments,
+			jb,
+			yb,
+			delay_hours as delayHours,
+			create_time as createTime,
+			user_name as userName,
+			global_send as globalSend,
+			state
+		from system_email
+		where global_send is not null
+		<if test="@Ognl@isBlank(state)">and state in (1,2) </if>
+		<if test="@Ognl@isNotBlank(state)">and state = #{state} </if>
+		<if test="@Ognl@isNotBlank(globalSend)">and global_send = #{globalSend} </if>
+		<if test="@Ognl@isNotBlank(title)">and title like concat('%',#{title},'%') </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		order by create_time desc 
+	</select>
+	<select id="indexAuditCount" parameterType="hashmap" resultType="int">
+		select  count(1) from system_email where global_send is not null
+		<if test="@Ognl@isBlank(state)">and state in (1,2) </if>
+		<if test="@Ognl@isNotBlank(state)">and state = #{state} </if>
+		<if test="@Ognl@isNotBlank(globalSend)">and global_send = #{globalSend} </if>
+		<if test="@Ognl@isNotBlank(title)">and title like concat('%',#{title},'%') </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+	
+	<!-- 查询 待审批的记录 -->
+	<select id="byIds" resultType="com.lingyu.dntg.bean.pojo.SystemEmailPojo">
+		SELECT
+			id,
+			server_id as serverId,
+			receiver_names receiverNames,
+			title,
+			content,
+			attachments,
+			jb,
+			yb,
+			delay_hours as delayHours,
+			create_time as createTime,
+			user_name as userName,
+			global_send as globalSend,
+			state
+		FROM system_email
+		where  state = 1
+		and id in <foreach item="item" index="index" collection="list" open="(" separator="," close=")">#{item}</foreach>
+	</select>
+	
+	<insert id="insert" parameterType="com.lingyu.dntg.bean.pojo.SystemEmailPojo" useGeneratedKeys="true" keyProperty="id">
+		insert into system_email(
+			server_id,
+			receiver_names,
+			title,
+			content,
+			attachments,
+			jb,
+			yb,
+			delay_hours,
+			create_time,
+			user_name,
+			create_by,
+			state,
+			global_send
+		)values(
+			#{serverId},
+			#{receiverNames},
+			#{title},
+			#{content},
+			#{attachments},
+			#{jb}, 
+			#{yb},
+			#{delayHours},
+			#{createTime},
+			#{userName},
+			#{createBy},
+			#{state},
+			#{globalSend}
+		)
+	</insert>
+	
+	<!-- 信息回复 -->
+	<insert id="insertMessageReply" parameterType="hashmap" useGeneratedKeys="true" keyProperty="emailId">
+		insert into system_email(
+			server_id,
+			receiver_names,
+			title,
+			content,
+			attachments,
+			jb,
+			yb,
+			delay_hours,
+			create_time,
+			user_name,
+			create_by,
+			state,
+			global_send
+		)values(
+			#{currentServerId},
+			#{receiverNames},
+			#{title},
+			#{content},
+			'',
+			0, 
+			0, 
+			0,
+			now(),
+			#{sessionUser.loginName},
+			#{sessionUser.id},
+			1,
+			0
+		)
+	</insert>
+	
+	<!-- 修改审批人和状态 -->
+	<update id="updateState" parameterType="hashmap">
+		update system_email set check_name=#{checkName}, state=#{state} where id =#{id}
+	</update>
+	
+	<!-- 批量审批 -->
+	<update id="batchUpdate" parameterType="hashmap">
+		update system_email set check_name=#{sessionUser.loginName}, state=#{state} 
+		where id in
+		<foreach item="item" index="index" collection="recordIds" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</update>
+	
+</mapper>

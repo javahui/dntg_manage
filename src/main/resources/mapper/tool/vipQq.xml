@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="vipQq">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		select 
+				id,
+				min_recharge as minRecharge,
+				pic,
+				qq,
+				log_update_time as logUpdateTime,
+				(select GROUP_CONCAT(server_id) from vip_qq_servers where vip_qq_id=vip_qq.id) as serverIds
+		from vip_qq 
+		where 1=1
+		<if test="@Ognl@isNotBlank(qq)">and qq like concat('%',#{qq},'%')</if>
+		order by log_update_time desc 
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int" >
+		select count(*) from vip_qq where 1=1
+	 	<if test="@Ognl@isNotBlank(qq)">and qq like concat('%',#{qq},'%')</if>
+	</select>
+	
+	<insert id="insert" parameterType="hashmap" useGeneratedKeys="true" keyProperty="vipQqId">
+		insert into vip_qq(
+			min_recharge,
+			pic,
+			qq,
+			log_update_time
+		)
+		values(
+			#{minRecharge},
+			#{pic},
+			#{qq},
+			#{nowTime}
+		)
+	</insert>
+	<insert id="insertServers">
+		insert into vip_qq_servers(server_id,vip_qq_id) values
+		<foreach item="item" index="index" collection="serverIdList" separator=",">
+           (#{item}, #{vipQqId})
+        </foreach>
+	</insert>
+	
+	<select id="byId" parameterType="int" resultType="hashmap">
+		select			
+			id,
+			min_recharge as minRecharge,
+			pic,
+			qq,
+			log_update_time as logUpdateTime,
+			server_ids as serverIds
+		from vip_qq 
+		where id = #{id}
+	</select>
+	
+	<update id="update" parameterType="hashmap">
+		update vip_qq 
+		 set min_recharge=#{minRecharge},
+			   pic=#{pic},
+			   qq=#{qq} 
+		 where id=#{id}
+	</update>
+	
+	<delete id="delete" >
+		delete from vip_qq where id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>	
+	
+	<delete id="deleteServers" >
+		delete from vip_qq_servers where vip_qq_id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>	
+	
+</mapper>

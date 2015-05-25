@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleBaoshi">
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		select count(a.user_role_id) totalCount
+			  ,floor(a.tlevel/10) alevel
+			  ,count(a.user_role_id)/(select count(DISTINCT user_role_id) from role_baoshi)*100 rate
+		from (select sum(LEVEL) tlevel
+					,user_role_id
+			  from role_baoshi GROUP BY user_role_id) a
+	    GROUP BY alevel ORDER BY alevel DESC
+	</select>
+
+	<select id="indexcount" parameterType="hashmap" resultType="int" >
+		select count(DISTINCT user_role_id) totalCount 
+		from role_baoshi
+	</select>
+	
+	<!-- 查询角色的宝石 -->
+	<select id="getRoleBaoshi" resultType="hashmap">
+		select 
+		id
+		,user_role_id userRoleId
+		,part
+		,grid
+		,level
+		,fail_count failCount
+		,exp
+		,update_time updateTime
+		,log_update_time logUpdateTime
+		from role_baoshi 
+		where user_role_id = #{id}
+	</select>
+</mapper>
+

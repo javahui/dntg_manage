@@ -1,0 +1,24 @@
+.selectimg {
+    background: url(multiselect.gif) repeat-x;
+	position:absolute; 
+	margin:-1px 0px 0px -1px;
+	*margin:0px 0px 0px -1px;
+	width:19px; 
+	height:21px;
+	display: inline;
+	line-height:21px; 
+	vertical-align:middle;  
+}
+
+
+.selectimgon {
+    background: url(multiselect-hover.gif) repeat-x;
+	position:absolute;  
+	margin:-1px 0px 0px -1px;
+	*margin:0px 0px 0px -1px;	
+	width:19px;
+	height:21px;  
+	line-height:21px; 
+	vertical-align:middle;
+	display: inline;
+}

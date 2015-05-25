@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="serversIntegrationReportlog">
+<!-- 关键信息整合中所需的数据 -->
+<!-- 登陆统计信息 得到（（ducount 登录用户数,dcount 登陆次数,davg 人均登陆次数,lsducount 昨日登陆用户数） -->
+ <select id="loginGroupList" parameterType="hashmap" resultType="hashmap">
+      select 
+		tb1.date date,
+		tb1.dcount dcount,
+		tb1.ducount ducount,
+		dcount/ducount davg,
+		tb2.lsducount lsducount
+		from(
+			select DATE_FORMAT(log_time,'%Y-%m-%d')date,
+			count(DISTINCT user_role_id) ducount,
+			count(1) dcount 
+			from role_login 
+			where 1=1
+			<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >=  #{startTime}]]> </if> 
+			<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <=  #{endTime}]]> </if> 
+			GROUP BY date 
+			ORDER BY date desc) tb1 left join
+			(select 
+			DATE_FORMAT(log_time,'%Y-%m-%d')date,
+			count(DISTINCT user_role_id) lsducount 
+			from role_login 
+			where 1=1
+			<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= date_sub(#{startTime},INTERVAL 1 day)]]></if>   
+			<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <=  #{endTime}]]> </if> 
+			GROUP BY date 
+			ORDER BY date desc) tb2 on date_sub(tb1.date,INTERVAL 1 day)=tb2.date
+      </select>
+      <!-- 日均在线值 （ accu 日均在线,puuc 日峰值在线数,timecount 当日数据包含小时数）-->   
+      <select id="onlineGroupList" parameterType ="hashmap" resultType="hashmap">
+      select
+	    DATE_FORMAT(log_day,'%Y-%m-%d')date,
+	    avg(count)accu,
+	    max(count) puuc,
+	    count(DISTINCT log_time)timecount
+	    from role_online
+	    where 1=1
+	    <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime} ]]> </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime} ]]> </if> 		
+	    GROUP BY log_day
+	    order by log_day desc
+      </select> 
+       <!-- 元宝获取 （ybIncr） -->     
+     <select id="ybincrGroupList" parameterType="hashmap" resultType="hashmap">
+       select 
+	  DATE_FORMAT(log_day,'%Y-%m-%d') date,
+	  sum(yb)ybincr 
+	  from yb_incr 
+	  where 1=1
+	  <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime} ]]> </if> 
+	  <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime} ]]> </if> 
+	  GROUP BY log_day 
+	  ORDER BY date desc
+     </select>    
+     <!-- 元宝消耗 （ybconsume） -->    
+     <select id="ybconsumeGroupList" parameterType="hashmap" resultType="hashmap">
+      select 
+	  DATE_FORMAT(log_day,'%Y-%m-%d') date,
+	  sum(yb)ybconsume 
+	  from yb_consume 
+	  where 1=1
+	   <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime} ]]> </if> 
+	  <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime} ]]> </if> 
+	  GROUP BY log_day 
+	  ORDER BY date desc
+     </select>
+</mapper>

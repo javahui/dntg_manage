@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+	<!-- 
+			<property name="cronExpression" value="*/5 * * * * ?" /> 每隔5秒
+			<property name="cronExpression" value="0 */1 * * * ?" /> 每隔一分钟
+			<property name="cronExpression" value="0 0 23 * * ?" /> 每天23点
+			<property name="cronExpression" value="0 0 1 1 * ?" /> 每月1号1点
+			<property name="cronExpression" value="0 0 23 L * ?" /> 每月最后一天23点
+			<property name="cronExpression" value="0 0 1 ? * L" /> 每周星期天1点
+			<property name="cronExpression" value="0 26,29,30 * * * ?" /> 分别在26,29.30分执行
+			<property name="cronExpression" value="0 59 23 * * ?" /> 每天23点59分
+	-->
+	
+	<!-- 定时工厂 -->
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean" init-method="start" lazy-init="false">
+		<property name="quartzProperties">
+			<props>
+				<prop key="org.quartz.threadPool.threadCount">100</prop>
+				<prop key="org.quartz.scheduler.skipUpdateCheck">true</prop>
+			</props>
+		</property>
+		<property name="triggers">
+			<list>
+				<!-- 实时分服总数据 -->
+				<bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+					<property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="serverRealTimeTotalDataJob" />
+							<property name="targetMethod" value="run" />
+						</bean>
+					</property>
+					<property name="cronExpression" value="0 0,6,11,16,21,26,31,36,41,46,51,56 * * * ?" />
+				</bean>
+				<!-- 全服关键信息整合报表 -->
+				<bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean" >
+					<property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="serversIntegrationReportJob" />
+							<property name="targetMethod" value="run" />
+						</bean>
+					</property>
+					<property name="cronExpression" value="0 09,19,29,39,49,59 * * * ?" />
+				</bean>
+				<!-- 解析统计数据 -->
+				<bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+					<property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="allServerStatisticsJob" />
+							<property name="targetMethod" value="run" />
+						</bean>
+					</property>
+					<property name="cronExpression" value="0 10 0 * * ?" />
+				</bean>
+				<!-- 每分钟查找要发由的公告记录,并发布 -->
+				<bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+					<property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="noticeJob" />
+							<property name="targetMethod" value="run" />
+						</bean>
+					</property>
+					<property name="cronExpression" value="0 */1 * * * ?" />
+				</bean>
+				<!-- baidu战斗力排行 -->
+				<bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+					<property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="zhandouliRankJob" />
+							<property name="targetMethod" value="run" />
+						</bean>
+					</property>
+					<property name="cronExpression" value="0 30 1 * * ?" />
+				</bean>
+				<!-- 统计充值和元宝花费前一千名用户 每个小时的0分30秒执行 -->
+				<bean class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+					<property name="jobDetail">
+						<bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+							<property name="targetObject" ref="topOneThousandStatisticsJob" />
+							<property name="targetMethod" value="run" />
+						</bean>
+					</property>
+					<property name="cronExpression" value="30 0 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23 * * ?" />
+				</bean>
+
+			</list>
+		</property>
+	</bean>
+</beans>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="keepCount">
+<!-- 精确玩家保有率 -->
+	<select id="staticticsPlayLost" parameterType="hashmap" resultType="hashmap">
+		select * from keep_count
+		where 1=1
+		<if test="@Ognl@isNotBlank(id)">and id =#{id}</if>
+		<if test="@Ognl@isNotBlank(logTime)">and log_time =#{logTime}</if>
+		<if test="@Ognl@isNotBlank(createTime)">and lcreate_time =#{createTime}</if>
+		<if test="@Ognl@isNotBlank(createCount)">and create_count =#{createCount}</if>
+		<if test="@Ognl@isNotBlank(keepCount1)">and keep_count1 =#{keepCount1}</if>
+		<if test="@Ognl@isNotBlank(keepCount2)">and keep_count2 =#{keepCount2}</if>
+		<if test="@Ognl@isNotBlank(keepCount3)">and keep_count3 =#{keepCount3}</if>
+		<if test="@Ognl@isNotBlank(keepCount4)">and keep_count4 =#{keepCount4}</if>
+		<if test="@Ognl@isNotBlank(keepCount5)">and keep_count5 =#{keepCount5}</if>
+		<if test="@Ognl@isNotBlank(keepCount6)">and keep_count6 =#{keepCount6}</if>
+		<if test="@Ognl@isNotBlank(keepCount7)">and keep_count7 =#{keepCount7}</if>
+		<if test="@Ognl@isNotBlank(serverId)">and server_id =#{serverId}</if>
+		<if test="@Ognl@isNotBlank(coopName)">and coop_name =#{coopName}</if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+	<select id="staticticsPlayLostCount" parameterType="hashmap" resultType="int">
+      select count(1)
+		from keep_count
+		where 1=1
+		<if test="@Ognl@isNotBlank(id)">and id =#{id}</if>
+		<if test="@Ognl@isNotBlank(logTime)">and log_time =#{logTime}</if>
+		<if test="@Ognl@isNotBlank(createTime)">and lcreate_time =#{createTime}</if>
+		<if test="@Ognl@isNotBlank(createCount)">and create_count =#{createCount}</if>
+		
+		<if test="@Ognl@isNotBlank(keepCount1)">and keep_count1 =#{keepCount1}</if>
+		<if test="@Ognl@isNotBlank(keepCount2)">and keep_count2 =#{keepCount2}</if>
+		<if test="@Ognl@isNotBlank(keepCount3)">and keep_count3 =#{keepCount3}</if>
+		<if test="@Ognl@isNotBlank(keepCount4)">and keep_count4 =#{keepCount4}</if>
+		<if test="@Ognl@isNotBlank(keepCount5)">and keep_count5 =#{keepCount5}</if>
+		<if test="@Ognl@isNotBlank(keepCount6)">and keep_count6 =#{keepCount6}</if>
+		<if test="@Ognl@isNotBlank(keepCount7)">and keep_count7 =#{keepCount7}</if>
+		<if test="@Ognl@isNotBlank(serverId)">and server_id =#{serverId}</if>
+		<if test="@Ognl@isNotBlank(coopName)">and coop_name =#{coopName}</if>
+		<if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ create_time >= #{startTime}]]></if>
+		<if test="@Ognl@isNotBlank(endTime)">and <![CDATA[  create_time <= #{endTime}]]></if>
+	</select>
+</mapper>

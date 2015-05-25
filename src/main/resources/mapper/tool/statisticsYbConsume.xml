@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="statisticsYbConsume">
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into statistics_yb_consume(day,event,sum,server) values(#{day},#{event},#{sum},#{server})
+	</insert>
+	
+	<delete id="deleteByDayAndServer" parameterType="hashmap">
+		delete from statistics_yb_consume where day = #{day} and server =#{server}
+	</delete>
+	
+	<select id="selectYbConsume" parameterType="hashmap" resultType="hashmap">
+         select event,sum(sum) as sum from statistics_yb_consume
+           where 1=1
+            	<if test="@Ognl@isNotBlank(sevent)">and event= #{sevent} </if>
+                <if test="@Ognl@isNotBlank(startTime)">and day <![CDATA[ >= ]]> #{startTime} </if>
+	 	        <if test="@Ognl@isNotBlank(endTime)">and day <![CDATA[ <= ]]> #{endTime} </if>
+	 	        group by event order by event
+	</select>
+	<select id="selectYbConsumeByEvent" parameterType="hashmap" resultType="hashmap">
+         select event,sum(sum) as sum,day from statistics_yb_consume
+           where 1=1
+            	<if test="@Ognl@isNotBlank(sevent)">and event= #{sevent} </if>
+                <if test="@Ognl@isNotBlank(startTime)">and day <![CDATA[ >= ]]> #{startTime} </if>
+	 	        <if test="@Ognl@isNotBlank(endTime)">and day <![CDATA[ <= ]]> #{endTime} </if>
+	 	        group by day order by day
+	</select>
+	
+	<insert id="batchinsert" parameterType="java.util.HashMap">
+		insert into statistics_yb_consume(day,event,sum,server) values
+		<foreach collection="list" item="item" index="index" separator="," >  
+        	(#{item.day},#{item.event},#{item.sum},#{item.server})  
+    	</foreach>  
+	</insert>
+</mapper>

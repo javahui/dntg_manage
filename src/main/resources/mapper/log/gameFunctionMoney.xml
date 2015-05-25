@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="gameFunctionMoney">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			id
+			,event_type eventType
+			,log_day logDay
+			,sum(consume_yb) consumeYb
+			,sum(consume_yxb) consumeYxb
+			,sum(consume_bind_yb) consumeBindYb
+			,sum(gain_yb) gainYb
+			,sum(gain_yxb) gainYxb
+			,sum(gain_bind_yb) gainBindYb
+			,sum(recharge_yb) rechargeYb
+			,sum(total_times) totalTimes
+		from game_function_money
+        where 1=1
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+         	<foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+                #{item}  
+            </foreach>  
+		</if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day<= #{endTime}]]></if> 
+		group by log_day
+		order by log_day desc
+    </select>
+	 <select id="indexCount" parameterType="hashmap" resultType="int">
+		select COUNT(DISTINCT log_day) from game_function_money where 1=1
+        <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+        	<foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+               #{item}
+           </foreach>  
+		</if> 
+        <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+        <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day<= #{endTime}]]></if>  
+	</select>
+	
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+		select 
+			log_day logDay
+			,sum(total_times) totalTimes
+			,sum(gain_yb) gainYb
+			,sum(recharge_yb) rechargeYb
+			,sum(consume_yb) consumeYb
+			,sum(gain_bind_yb) gainBindYb
+			,sum(consume_bind_yb) consumeBindYb
+			,sum(gain_yxb) gainYxb
+			,sum(consume_yxb) consumeYxb
+		from game_function_money
+        where 1=1
+         <if test="@Ognl@isNotBlank(eventTypesList)"> and event_type in 
+         	<foreach item="item" index="index" collection="eventTypesList" open="(" separator="," close=")">  
+                #{item}  
+            </foreach>  
+		</if> 
+         <if test="@Ognl@isNotBlank(startTime)"><![CDATA[and log_day>= #{startTime}]]></if> 
+         <if test="@Ognl@isNotBlank(endTime)"><![CDATA[and  log_day<= #{endTime}]]></if> 
+		group by log_day
+		order by log_day desc
+    </select>
+    
+    <select id="getTodayRecord" parameterType="string" resultType="hashmap">
+    	select 
+			sum(gain_yb) as gainYb,
+			sum(consume_yb) as consumeYb
+		from game_function_money where log_day = #{time}
+    </select>
+</mapper>
+

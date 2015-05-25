@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="gameCfServer">
+
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		SELECT count(1) FROM game_config_file WHERE 1=1
+		<if test="@Ognl@isNotBlank(fileDesc)"> and file_desc like concat('%', #{fileDesc}, '%') </if> 
+		<if test="@Ognl@isNotBlank(fileMapName)"> and file_map_name =  #{fileMapName} </if> 
+		<if test="@Ognl@isNotBlank(startTime)">  and DATE_FORMAT(upload_time, '%Y-%m-%d') <![CDATA[ >= ]]>  #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">  and DATE_FORMAT(upload_time, '%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if> 
+	</select>
+	
+	<select id="byServerIdsByFileId" resultType="string">
+		select GROUP_CONCAT(server_id) from game_cf_server where file_id=178
+	</select>
+	
+	<insert id="batchInsert" parameterType="hashmap">
+		insert into game_cf_server(server_id,file_map_name,file_id) values
+		<foreach collection="serverIdList" item="item" index="index"  separator=",">
+			(#{item},#{fileMapName}, #{id} )
+		</foreach>
+	</insert>
+	
+	<update id="update" parameterType="hashmap">
+		update set action_info set 
+			action_name=#{actionName},
+			action=#{action},
+			action_desc=#{actionDesc},
+			type_value=#{actionValue},
+			order_value=#{orderValue},
+			action_level=#{actionLevel}
+		where id=#{id}
+	</update>
+	
+	<delete id="deleteByFileMapName" parameterType="hashmap">
+		DELETE FROM game_cf_server WHERE file_map_name = #{fileMapName}
+	</delete>
+	
+	<delete id="deleteByFileId">
+		DELETE FROM game_cf_server WHERE file_id in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+
+</mapper>

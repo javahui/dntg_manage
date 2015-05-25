@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="giftCode">
+<!-- 百度激活码使用情况 -->
+<select id="index"  parameterType="hashmap"  resultType="hashmap">
+      select 
+           id as id,
+           log_id as logid,
+           gift_code as giftCode,
+           use_info as useInfo
+      from gift_code_#{num} 
+      where state= 1 and log_id= #{batch}
+</select>
+
+</mapper>

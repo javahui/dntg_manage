@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleDeceAccount">
+	
+	<!-- 得到前100名元宝花费用户 -->
+	<select id="getOneHundredUser" parameterType="com.lingyu.dntg.bean.pojo.MingRenTangConfig" resultType="com.lingyu.dntg.bean.pojo.MingRenTangUser">
+		SELECT
+			a.user_role_id as userRoleId,
+			b. NAME as userRoleName,
+			b.platform as platformName,
+			b.server_id as serverId,
+			max(a.log_update_time) as lastTime,
+			sum(a.decr_value) as num,
+			(select data from role_rank_data where user_role_id = a.user_role_id) as data
+		FROM
+			role_dece_account a,
+			user_role b
+		WHERE
+			a.user_role_id = b.id
+		AND a.log_update_time <![CDATA[ >= ]]> #{startTime}
+		AND a.log_update_time <![CDATA[ <= ]]> #{finishTime}
+		group by a.user_role_id
+		having num <![CDATA[ >= ]]> #{yaoqiu}
+		order by num desc
+		LIMIT 100
+	</select>
+</mapper>

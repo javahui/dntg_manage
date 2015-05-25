@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="serverRealTimeTotalData">
+
+	<!-- 得到一个小时最新的记录 -->
+	<select id="getNewestByLogHour" parameterType="string" resultType="com.lingyu.dntg.bean.pojo.ServerRealTimeTotalData">
+		select
+			server_id as serverId,
+			today_create as todayCreate,
+			today_login as todayLogin,
+			online_count as onlineCount,
+			charge_count_incr as chargeCountIncr,
+			charge_count as chargeCount,
+			charge_total as chargeTotal,
+			pay_odds as payOdds,
+			arpu,
+			accu,
+			pccu,
+			incr_yb as incrYb,
+			decr_yb as decrYb,
+			dt,
+			log_day as logDay,
+			log_hour as logHour,
+			log_time as logTime,
+			log_minute as logMinute,
+			log_update_time as logUpdateTime
+		FROM server_real_time_total_data
+		WHERE log_hour = #{logHour} and today_login <![CDATA[ > ]]> 5
+		order by id desc
+		limit 1
+	</select>
+	
+	<select id="getNewestByLogDay" parameterType="string" resultType="com.lingyu.dntg.bean.pojo.ServerRealTimeTotalData">
+		select
+			server_id as serverId,
+			today_create as todayCreate,
+			today_login as todayLogin,
+			online_count as onlineCount,
+			charge_count_incr as chargeCountIncr,
+			charge_count as chargeCount,
+			charge_total as chargeTotal,
+			pay_odds as payOdds,
+			arpu,
+			accu,
+			pccu,
+			incr_yb as incrYb,
+			decr_yb as decrYb,
+			dt,
+			log_day as logDay,
+			log_hour as logHour,
+			log_time as logTime,
+			log_minute as logMinute,
+			log_update_time as logUpdateTime
+		FROM server_real_time_total_data t RIGHT JOIN(
+			select max(id) as id 
+			FROM server_real_time_total_data
+			where log_day = #{logDay} and today_login <![CDATA[ > ]]> 5
+			group by log_hour limit 24
+		) temp on temp.id = t.id
+	</select>
+</mapper>

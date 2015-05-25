@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="serversIntegrationReport">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			cast(date as char(10)) date
+			,createCount createCount
+			,dCount dCount
+			,(1-(dCount-createCount)/lsDcount)*100 lost
+			,accu accu
+			,accu*24*60/dCount dt
+			,cnt cnt
+			,distCount distCount
+			,distCount/dCount*100 pl
+			,allRmb allRmb
+			,allRmb/distCount arpu
+		from 
+			(
+				select
+					DATE_FORMAT(date,'%Y-%m-%d') date
+					,log_time logTime
+					,sum(create_count) createCount
+					,sum(d_count) dCount
+					,sum(accu) accu
+					,sum(cnt) cnt
+					,sum(dist_count) distCount
+					,sum(all_rmb) allRmb
+					,max(pccu) pccu
+					,sum(yb_incr) ybIncr
+					,sum(yb_consume) ybConsume
+					,sum(ls_dcount) lsDcount
+				from servers_integration_report
+				where 1=1
+				<if test="@Ognl@isNotBlank(serverIds)">
+					and server_id in <foreach item="item" index="index" collection="serverIdList" open="(" separator="," close=")">  #{item} </foreach>
+				 </if> 
+				<if test="@Ognl@isNotBlank(startTime)">and date <![CDATA[ >= ]]> #{startTime} </if> 
+				<if test="@Ognl@isNotBlank(endTime)">and date <![CDATA[ <= ]]> #{endTime}  </if>
+				group by date order by date desc
+			) tb1
+		union all
+		select 
+			"合计" as date
+			,sum(createCount) createCount
+			,sum(dCount) dCount
+			,avg((1-(dCount-createCount)/lsDcount)*100) lost
+			,avg(accu) accu
+			,avg(accu*24*60/dCount) dt
+			,sum(cnt) cnt
+			,sum(distCount) distCount
+			,avg(distCount/dCount*100) pl
+			,avg(allRmb) allRmb
+			,avg(allRmb/distCount) arpu
+		from 
+			(
+				select
+					DATE_FORMAT(date,'%Y-%m-%d') date 
+					,log_time logTime
+					,sum(create_count) createCount
+					,sum(d_count) dCount
+					,sum(accu) accu
+					,sum(cnt) cnt
+					,sum(dist_count) distCount
+					,sum(all_rmb) allRmb
+					,max(pccu) pccu
+					,sum(yb_incr) ybIncr
+					,sum(yb_consume) ybConsume
+					,sum(ls_dcount) lsDcount
+				from servers_integration_report
+				where 1=1
+				<if test="@Ognl@isNotBlank(serverIds)">
+					and server_id in <foreach item="item" index="index" collection="serverIdList" open="(" separator="," close=")">  #{item} </foreach>
+				</if>
+				<if test="@Ognl@isNotBlank(startTime)">and date <![CDATA[ >= ]]> #{startTime} </if> 
+				<if test="@Ognl@isNotBlank(endTime)">and date <![CDATA[ <= ]]> #{endTime}  </if>
+				group by date order by date desc
+			) tb1
+	 </select>
+
+	<select id="excelIndex" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+		select 
+		date	
+		,createCount createCount
+		,dCount dCount
+		,(1-(dCount-createCount)/lsDcount)*100 lost
+		,accu accu
+		,accu*24*60/dCount dt
+		,cnt cnt
+		,distCount distCount
+		,distCount/dCount*100 pl
+		,allRmb allRmb
+		,allRmb/distCount arpu
+		from 
+		(select DATE_FORMAT(date,'%Y-%m-%d') date 
+		,log_time logTime
+		,sum(dist_count) distCount
+		,sum(all_rmb) allRmb
+		,sum(cnt) cnt
+		,sum(create_count) createCount
+		,sum(accu) accu
+		,max(pccu) pccu
+		,sum(yb_incr) ybIncr
+		,sum(yb_consume) ybConsume
+		,sum(d_count) dCount
+		,sum(ls_dcount) lsDcount
+		from servers_integration_report
+		where 1=1
+		<if test="@Ognl@isNotBlank(serverIds)">
+			and server_id in <foreach item="item" index="index" collection="serverIdList" open="(" separator="," close=")"> #{item} </foreach>
+		</if> 
+		<if test="@Ognl@isNotBlank(startTime)">and date <![CDATA[ >= ]]> #{startTime} </if> 
+		<if test="@Ognl@isNotBlank(endTime)">and date <![CDATA[ <= ]]> #{endTime}  </if>
+		group by date order by date desc) tb1
+	 </select>
+	 
+	 <select id="selectByserverIdAndDate" parameterType="hashmap" resultType="com.lingyu.dntg.bean.pojo.ServersIntegrationReport">
+	 	SELECT
+			id,
+			date,
+			log_time as logTime,
+			server_id as serverId,
+			dist_count as distCount,
+			all_rmb as allRmb,
+			cnt,
+			create_count as createCount,
+			accu,
+			pccu,
+			yb_incr as ybIncr,
+			yb_consume as ybConsume,
+			d_count as dCount,
+			ls_dcount as lsDcount
+		FROM 
+			servers_integration_report
+		where server_id = #{serverId} AND date = #{date} 
+	 </select>
+	 
+	 <insert id="insert" parameterType="com.lingyu.dntg.bean.pojo.ServersIntegrationReport">
+		insert into servers_integration_report(
+			date,
+			log_time,
+			server_id,
+			dist_count,
+			all_rmb,
+			cnt,
+			create_count,
+			accu,
+			pccu,
+			yb_incr,
+			yb_consume,
+			d_count,
+			ls_dcount
+		)
+		values(
+			#{date},
+			#{logTime},
+			#{serverId},
+			#{distCount},
+			#{allRmb},
+			#{cnt},
+			#{createCount},
+			#{accu},
+			#{pccu},
+			#{ybIncr},
+			#{ybConsume},
+			#{dCount},
+			#{lsDcount}
+		)
+	</insert>
+	 
+	 <update id="updateByserverIdAndDate" parameterType="com.lingyu.dntg.bean.pojo.ServersIntegrationReport">
+		update servers_integration_report set
+			date = str_to_date(#{date}, '%Y-%m-%d'),
+			log_time = #{logTime},
+			server_id = #{serverId},
+			dist_count = #{distCount},
+			all_rmb = #allRmb},
+			cnt = #{cnt},
+			create_count = #{createCount},
+			accu = #{accu},
+			pccu = #{pccu},
+			yb_incr = #{ybIncr},
+			yb_consume = #{ybConsume},
+			d_count = #{dCount},
+			ls_dcount = #{lsDcount}
+		where server_id = #{serverId} AND date = #{date} 
+	 </update>
+</mapper>

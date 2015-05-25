@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="roleOnline">
+
+	<!-- 玩家在线数统计 -->
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select 
+			count
+			,log_time logTime
+		from role_online
+		where 1=1
+		 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_day >= #{startTime}]]> </if> 
+	 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_day <= #{endTime}]]>  </if>
+		order by log_time desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(*) 
+		from role_online
+		where 1=1
+		 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_day >= #{startTime}]]> </if> 
+	 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_day <= #{endTime}]]>  </if>
+	</select>
+
+	<!-- 玩家每日在线数统计 -->
+	<select id="indexList" parameterType="hashmap" resultType="hashmap">
+	    select
+		    DATE_FORMAT(log_day,'%Y-%m-%d') date,
+		    avg(count) accu,
+		    max(count) puuc,
+	    	count(DISTINCT log_time) timecount
+	    from role_online
+		where 1=1
+		 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime}]]> </if> 
+	 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime}]]>  </if>
+	    GROUP BY log_day
+	    order by log_day desc
+	</select>
+	<select id="indexListCount" parameterType="hashmap" resultType="int">
+	    select COUNT(DISTINCT log_day)
+	    from role_online
+		where 1=1
+		 <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[ log_time >= #{startTime}]]> </if> 
+	 	 <if test="@Ognl@isNotBlank(endTime)">and <![CDATA[ log_time <= #{endTime}]]>  </if>
+	</select>
+	
+	<select id="onlineGroupList" parameterType="string" resultType="hashmap">
+	    select
+		    avg(count) as accu,
+		    max(count) as pccu
+	    from role_online
+	    where log_day = #{time} 
+	</select>
+</mapper>

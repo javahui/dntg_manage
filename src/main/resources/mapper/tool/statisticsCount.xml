@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="statisticsCount">
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into statistics_count(day,type,value,count,server) values(#{day},#{type},#{value},#{count},#{server})
+	</insert>
+	
+	<delete id="deleteByDayAndServer" parameterType="hashmap">
+		delete from statistics_count where day = #{day} and server = #{server}
+	</delete>
+	
+	<insert id="batchinsert" parameterType="java.util.HashMap">
+		insert into statistics_count(day,type,value,count,server) values
+		<foreach collection="list" item="item" index="index" separator="," >  
+        	(#{item.day},#{item.type},#{item.value},#{item.count},#{item.server})
+    	</foreach>  
+	</insert>
+	<!-- 查询分布 -->
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+	  select  day as day, 
+	          value as value,
+	          sum(count) as count,
+	          type as type
+	  from statistics_count 
+	  where 1=1
+	  <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[day = #{startTime}]]></if> 
+	  <if test="@Ognl@isNotBlank(type)">and type =#{type}</if> 
+	  	group by day,value
+		order by value desc 
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+	select count(1) from (
+		select count(1)
+	  from statistics_count 
+	  where 1=1
+	  <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[day = #{startTime}]]></if> 
+	  <if test="@Ognl@isNotBlank(type)">and type =#{type}</if> 
+	  	group by day,value
+	)a
+	</select>
+	
+	<!-- 查询分布Excel -->
+	<select id="excel" parameterType="hashmap" resultType="java.util.LinkedHashMap">
+	select  day as day, 
+	          value as value,
+	          sum(count) as count,
+	          type as type
+	  from statistics_count 
+	  where 1=1
+	  <if test="@Ognl@isNotBlank(startTime)">and <![CDATA[day = #{startTime}]]></if> 
+	  <if test="@Ognl@isNotBlank(type)">and type =#{type}</if> 
+	  	group by day,value
+		order by value desc 
+	</select>
+</mapper>

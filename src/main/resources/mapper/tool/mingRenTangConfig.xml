@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="mingRenTangConfig">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select
+			id,
+			version,
+			type,
+			yaoqiu,
+			start_time as startTime,
+			finish_time as finishTime
+		from ming_ren_tang_config 
+		where 1=1
+		order by id desc 
+	</select>
+	
+	<select id="getTimeByType" parameterType="int" resultType="com.lingyu.dntg.bean.pojo.MingRenTangConfig">
+		select
+			id,
+			version,
+			type,
+			yaoqiu,
+			start_time as startTime,
+			finish_time as finishTime
+		from ming_ren_tang_config 
+		where 1=1 
+		and type = #{type}
+		and start_time <![CDATA[ <= ]]> NOW()
+		and finish_time <![CDATA[ >= ]]>  NOW()
+		limit 1
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into ming_ren_tang_config(
+			version,
+			type,
+			yaoqiu,
+			start_time,
+			finish_time
+		)
+		values(
+			#{ver},
+			#{id},
+			#{yaoqiu},
+			str_to_date(#{starttime}, '%Y/%m/%d/%H:%i:%s'),
+			str_to_date(#{finishtime}, '%Y/%m/%d/%H:%i:%s')
+		)
+	</insert>
+
+	<delete id="deleteAll">
+		TRUNCATE TABLE ming_ren_tang_config
+	</delete>
+</mapper>

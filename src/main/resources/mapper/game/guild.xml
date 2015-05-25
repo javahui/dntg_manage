@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="guild">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		SELECT g.id as id,
+			g.name as name,
+			g.banner_level as level,
+			g.user_role_id as userRoleId,
+			(select name from user_role where id = g.user_role_id) as userRoleName,
+			g.fighting as fighting,
+			g.create_time as createTime
+		from guild g
+		where 1=1
+		<if test="@Ognl@isNotBlank(name)">and g.name like concat('%',#{name},'%') </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(g.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(g.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+		order by g.fighting desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		SELECT count(1) from guild g
+		where 1=1
+		<if test="@Ognl@isNotBlank(name)">and g.name like concat('%',#{name},'%') </if>
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(g.create_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(g.create_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+	</select>
+</mapper>

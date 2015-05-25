@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="notice">
+
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		SELECT
+			id,
+			content,
+			start_time as startTime,
+			finish_time as finishTime,
+			step_time as stepTime,
+			repeat_count as repeatCount,
+			global,
+			finished_count as finishedCount,
+			notice_status as noticeStatus,
+			create_time as createTime,
+			notice_type as noticeType,
+			create_by as createBy,
+			(select user_name from user_info where id=notice.create_by) as createName,
+			(select GROUP_CONCAT(server_id) from notice_server where notice_id = notice.id) as serverIds
+		FROM notice where 1=1
+		<if test="@Ognl@isNotBlank(content)"> and content  like concat('%', #{content}, '%') </if>
+		<if test="@Ognl@isNotBlank(noticeStatus)"> and notice_status  = #{noticeStatus} </if>
+		<if test="@Ognl@isNotBlank(startTime)"> and create_time  <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)"> and create_time  <![CDATA[ <= ]]> #{endTime} </if>
+		<if test="@Ognl@isNotBlank(stepTime)"> and step_time = #{stepTime} </if>
+		<if test="sessionUser.allServer == false">
+			and create_by in (<foreach item="item" index="index" collection="sessionUser.roleUserIdList" separator="," >#{item}</foreach>)
+		</if>
+		order by id desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int" >
+		SELECT count(1) FROM notice where 1=1
+		<if test="@Ognl@isNotBlank(content)"> and content  like concat('%', #{content}, '%') </if>
+		<if test="@Ognl@isNotBlank(noticeStatus)"> and notice_status  = #{noticeStatus} </if>
+		<if test="@Ognl@isNotBlank(startTime)"> and create_time  <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)"> and create_time  <![CDATA[ <= ]]> #{endTime} </if>
+		<if test="@Ognl@isNotBlank(stepTime)"> and step_time = #{stepTime} </if>
+		<if test="sessionUser.allServer == false">
+			and create_by in (<foreach item="item" index="index" collection="sessionUser.roleUserIdList" separator="," >#{item}</foreach>)
+		</if>
+	</select>
+	
+	<!-- 查找要可以发布的记录 -->
+	<select id="getPublish" parameterType="string" resultType="com.lingyu.dntg.bean.pojo.Notice">
+		select
+			id,
+			content,
+			global,
+			repeat_count as repeatCount,
+			finished_count as finishedCount,
+			notice_type as  noticeType,
+			notice_status as noticeStatus
+		from notice 
+		where date_format(start_time, '%Y-%m-%d %H:%i') <![CDATA[ <= ]]> #{time} and date_format(finish_time, '%Y-%m-%d %H:%i') <![CDATA[ > ]]> #{time} and repeat_count <![CDATA[ < ]]> finished_count 
+		and notice_status in ( 1,2 )
+		and ((unix_timestamp( date_format(#{time}, '%Y-%m-%d %H:%i') )-unix_timestamp(start_time)) div 60 MOD step_time) = 0
+		and (unix_timestamp( date_format(#{time}, '%Y-%m-%d %H:%i') )-unix_timestamp(start_time)) div 60 !=0
+	</select>
+	
+	<!--得到公告的server_id -->
+	<select id="getServerIdsByNoticeId" parameterType="int" resultType="string">
+		select GROUP_CONCAT(g.server_id) from game_server g, notice_server n where n.server_id=g.server_id and n.notice_id = #{noticeId} GROUP BY g.game_db_url
+	</select>
+	
+	<insert id="insert" parameterType="hashmap" useGeneratedKeys="true" keyProperty="noticeId">
+		insert into notice(
+			content,
+			start_time,
+			finish_time,
+			step_time,
+			repeat_count,
+			global,
+			finished_count,
+			notice_status,
+			create_time,
+			notice_type,
+			create_by
+		)
+		values(
+			#{content},
+			#{startTime},
+			#{finishTime},
+			#{stepTime},
+			0,
+			#{global},
+			 (unix_timestamp(#{finishTime}) - unix_timestamp(#{startTime}) ) div (60 * #{stepTime}),
+			#{noticeStatus},
+			#{nowTime},
+			#{noticeType},
+			#{sessionUser.id}
+		)
+	</insert>
+	
+	<insert id="insertNoticeServer" parameterType="hashmap" >
+		insert into notice_server(
+			server_id,notice_id
+		)
+		values
+		<foreach item="item" index="index" collection="serverIdList" separator=",">
+	    	(#{item}, #{noticeId})
+		</foreach>
+	</insert>
+	
+	<update id="updateNoticeStatus" parameterType="hashmap">
+		update notice set notice_status=#{noticeStatus} where id=#{id}
+	</update>
+	
+	<update id="updateFinishedCountAndStatus" parameterType="hashmap">
+		update notice set repeat_count = #{repeatCount},  notice_status=#{noticeStatus} where id=#{id}
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM notice WHERE 	id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+	
+	<delete id="deleteNoticeServer">
+		DELETE FROM notice_server WHERE notice_id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+</mapper>

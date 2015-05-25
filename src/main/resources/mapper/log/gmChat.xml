@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="gmChat">
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+	    select 
+	    	log_time as logTime, 
+	    	type,
+	    	role_name as roleName,
+	    	to_role_name as toRoleName,
+	    	msg as msg  
+		FROM gm_chat
+        where 1=1
+        <if test="@Ognl@isNotBlank(roleName)">and role_name =#{roleName}</if> 
+        <if test="@Ognl@isNotBlank(type)">and type =#{type}</if> 
+        <if test="@Ognl@isNotBlank(toRoleName)">and to_role_name =#{toRoleName}</if> 
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(log_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(log_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+    </select>
+    <select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1) FROM gm_chat where 1=1
+		<if test="@Ognl@isNotBlank(roleName)">and role_name =#{roleName}</if> 
+		<if test="@Ognl@isNotBlank(type)">and type =#{type}</if> 
+		<if test="@Ognl@isNotBlank(toRoleName)">and to_role_name =#{toRoleName}</if> 
+		<if test="@Ognl@isNotBlank(startTime)">and date_format(log_time,'%Y-%m-%d') <![CDATA[ >= ]]> #{startTime} </if>
+		<if test="@Ognl@isNotBlank(endTime)">and date_format(log_time,'%Y-%m-%d') <![CDATA[ <= ]]> #{endTime} </if>
+    </select>
+</mapper>

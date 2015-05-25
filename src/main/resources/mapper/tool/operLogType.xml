@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="operLogType">
+
+	<select id="byId" parameterType="int" resultType="hashMap">
+		select
+			id,
+			class_name as className,
+			method_name as methodName,
+			type,
+			description
+		from oper_log_type
+		where id = #{id}
+	</select>
+	
+	<select id="byClazz" parameterType="hashmap" resultType="com.lingyu.dntg.bean.pojo.OperLogType">
+		select
+			id,
+			class_name as className,
+			method_name as methodName,
+			type,
+			description
+		from oper_log_type
+		where class_name = #{className} and method_name = #{methodName}	limit 1
+	</select>
+	
+	<select id="byClazzCount" parameterType="hashmap" resultType="int">
+		select count(1) from oper_log_type where class_name = #{className} and method_name = #{methodName}	limit 1
+	</select>
+	
+	<select id="index" parameterType="hashmap" resultType="hashmap">
+		select
+			id,
+			class_name as className,
+			method_name as methodName,
+			type,
+			description
+		from oper_log_type
+		where 1=1
+		<if test="@Ognl@isNotBlank(className)"> and class_name  like concat('%', #{className}, '%') </if>
+		<if test="@Ognl@isNotBlank(methodName)"> and method_name  like concat('%', #{methodName}, '%') </if>
+		<if test="@Ognl@isNotBlank(type)"> and type  like concat('%', #{type}, '%') </if>
+		<if test="@Ognl@isNotBlank(description)"> and description  like concat('%', #{description}, '%') </if>
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1) from oper_log_type where 1=1
+		<if test="@Ognl@isNotBlank(className)"> and class_name  like concat('%', #{className}, '%') </if>
+		<if test="@Ognl@isNotBlank(methodName)"> and method_name  like concat('%', #{methodName}, '%') </if>
+		<if test="@Ognl@isNotBlank(type)"> and type  like concat('%', #{type}, '%') </if>
+		<if test="@Ognl@isNotBlank(description)"> and description  like concat('%', #{description}, '%') </if>
+	</select>
+	
+	<insert id="insert" parameterType="hashmap">
+		insert into oper_log_type(
+			<if test="@Ognl@isNotBlank(className)"> class_name</if>
+			<if test="@Ognl@isNotBlank(methodName)"> ,method_name</if>
+			<if test="@Ognl@isNotBlank(type)"> ,type</if>
+			<if test="@Ognl@isNotBlank(description)"> ,description</if>
+		)
+		values(
+			<if test="@Ognl@isNotBlank(className)"> #{className}</if>
+			<if test="@Ognl@isNotBlank(methodName)"> ,#{methodName}</if>
+			<if test="@Ognl@isNotBlank(type)"> ,#{type}</if>
+			<if test="@Ognl@isNotBlank(description)"> ,#{description}</if>
+		)
+	</insert>
+	
+	<update id="update">
+		update oper_log_type set  id=id,
+			<if test="@Ognl@isNotBlank(className)"> class_name=#{className},</if>
+			<if test="@Ognl@isNotBlank(methodName)"> method_name=#{methodName},</if>
+			<if test="@Ognl@isNotBlank(type)">type=#{type},</if>
+			<if test="@Ognl@isNotBlank(description)">description=#{description}</if>
+		where id=#{id}
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM oper_log_type WHERE 
+		id in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+	</delete>
+</mapper>

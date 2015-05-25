@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="rankZhandouli">
+	<select id="index" parameterType="hashmap" resultType="hashmap" >
+		select
+			zhandouli,
+			role_name as roleName,
+			update_time as updateTime
+		from  rank_zhandouli 
+		where 1=1
+		order by zhandouli desc
+	</select>
+	<select id="indexCount" parameterType="hashmap" resultType="int">
+		select count(1)
+		from  rank_zhandouli where 1=1
+	</select>
+	
+	<!-- 全服战斗力排行 -->
+	<select id="selectRankZhandouli"  parameterType="int" resultType="hashmap">
+		select 
+			r.user_role_id,
+			r.role_name,
+			r.zhandouli,
+			u.user_id,
+			u.level,
+			u.login_count,
+			from_unixtime(u.offline_time/1000) as offline,
+			u.server_id 
+		from rank_zhandouli r 
+		left join user_role u on u.id=r.user_role_id 
+		ORDER BY r.zhandouli desc 
+		limit #{limit}
+	</select>
+	
+	<select id="indexExcel" parameterType="hashmap" resultType="java.util.LinkedHashMap" >
+		select
+			zhandouli,
+			role_name as roleName,
+			update_time as updateTime
+		from  rank_zhandouli 
+		where 1=1
+		order by zhandouli desc
+	</select>
+	
+	<!-- 得到前100名战斗力 -->
+	<select id="getTopOneHundredZhandouli" parameterType="com.lingyu.dntg.bean.pojo.MingRenTangConfig" resultType="com.lingyu.dntg.bean.pojo.MingRenTangUser">
+		SELECT
+			a.user_role_id as userRoleId,
+			b. NAME as userRoleName,
+			b.platform as platformName,
+			b.server_id as serverId,
+			a.log_update_time as lastTime,
+			a.zhandouli as num,
+			(select data from role_rank_data where user_role_id = a.user_role_id) as data
+		FROM
+			rank_zhandouli a,
+			user_role b
+		WHERE 
+			a.user_role_id = b.id
+		group by a.user_role_id
+		having num <![CDATA[ >= ]]> #{yaoqiu}
+		order by num desc
+		LIMIT 100
+	</select>
+</mapper>

@@ -1,0 +1,17 @@
+.reportStatClass{
+	width:99%;
+	height:25px;
+	line-height:25px;
+	padding-left:5px;
+}
+
+.reportCountClass{
+	color:red;
+	font-weight:bold;
+}
+.data_is_empty{
+	float:left; 
+	margin:20px 20px; 
+	color:#FF0000; 
+	font-weight:bold;
+}
