@@ -24,7 +24,7 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- DB -->
+		<!-- db -->
 		<dependency>
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
