@@ -17,6 +17,7 @@
 	</properties>
 
 	<dependencies>
+	
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -24,8 +25,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- database -->
-		
 		<!-- db -->
 		<dependency>
 			<groupId>mysql</groupId>
