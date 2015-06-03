@@ -5,7 +5,7 @@
 	<artifactId>dntg_manage</artifactId>
 	<packaging>war</packaging>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>dntg_manage Maven Webapp........................</name>
+	<name>dntg_manage</name>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
