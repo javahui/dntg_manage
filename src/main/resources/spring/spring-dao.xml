@@ -12,22 +12,22 @@
 	<context:property-placeholder location="classpath:properties/application.properties"/>
 	
 	<bean id="toolDataSource" class="com.alibaba.druid.pool.DruidDataSource" init-method="init" destroy-method="close">
-        <property name="url" value="${tool.jdbc.url}" />
-        <property name="username" value="${tool.jdbc.name}" />
-        <property name="password" value="${tool.jdbc.pwd}" />
-        <property name="filters" value="stat" />
-        <property name="maxActive" value="20" />
-        <property name="initialSize" value="1" />
-        <property name="maxWait" value="60000" />
-        <property name="minIdle" value="1" />
-        <property name="timeBetweenEvictionRunsMillis" value="3000" />
-        <property name="minEvictableIdleTimeMillis" value="300000" />
-        <property name="validationQuery" value="SELECT 'x'" />
-        <property name="testWhileIdle" value="true" />
-        <property name="testOnBorrow" value="false" />
-        <property name="testOnReturn" value="false" />
-    </bean>
-	
+		<property name="url" value="${tool.jdbc.url}" />
+		<property name="username" value="${tool.jdbc.name}" />
+		<property name="password" value="${tool.jdbc.pwd}" />
+		<property name="filters" value="stat" />
+		<property name="maxActive" value="20" />
+		<property name="initialSize" value="1" />
+		<property name="maxWait" value="60000" />
+		<property name="minIdle" value="1" />
+		<property name="timeBetweenEvictionRunsMillis" value="3000" />
+		<property name="minEvictableIdleTimeMillis" value="300000" />
+		<property name="validationQuery" value="SELECT 'x'" />
+		<property name="testWhileIdle" value="true" />
+		<property name="testOnBorrow" value="false" />
+		<property name="testOnReturn" value="false" />
+	</bean>
+
 	<bean id="gameDataSource" class="com.lingyu.dntg.dao.base.dynamicDataSource.GameDataSource" init-method="init">
 		<property name="maxActive" value="10" />
 		<property name="initialSize" value="1" />
@@ -47,7 +47,7 @@
 			<map key-type="java.lang.String" />
 		</property> 
 	</bean>
-	
+
     <bean id="toolSqlSession" class="org.mybatis.spring.SqlSessionTemplate">
 		<constructor-arg index="0" >
 			<bean class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -75,7 +75,7 @@
             </bean>
         </constructor-arg>
     </bean>
-    
+
     <bean id="logSqlSession" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" >
             <bean class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -89,7 +89,7 @@
             </bean>
         </constructor-arg>
     </bean>
-    
+
     <!-- mybatis分页(拦截器) -->
     <bean id="pagingSQLInterceptor" class="com.lingyu.dntg.dao.base.interceptor.PagingSQLInterceptor" />  
 </beans>
