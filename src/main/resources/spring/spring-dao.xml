@@ -28,6 +28,26 @@
         <property name="testOnReturn" value="false" />
     </bean>
 	
+	<bean id="gameDataSource" class="com.lingyu.dntg.dao.base.dynamicDataSource.GameDataSource" init-method="init">
+		<property name="maxActive" value="10" />
+		<property name="initialSize" value="1" />
+		<property name="maxWait" value="60000" />
+		<property name="minIdle" value="1" />
+		<property name="targetDataSources">    
+			<map key-type="java.lang.String" />
+		</property> 
+	</bean>
+	
+	<bean id="logDataSource" class="com.lingyu.dntg.dao.base.dynamicDataSource.LogDataSource" init-method="init">
+		<property name="maxActive" value="10" />
+		<property name="initialSize" value="1" />
+		<property name="maxWait" value="60000" />
+		<property name="minIdle" value="1" />
+		<property name="targetDataSources">    
+			<map key-type="java.lang.String" />
+		</property> 
+	</bean>
+	
     <bean id="toolSqlSession" class="org.mybatis.spring.SqlSessionTemplate">
 		<constructor-arg index="0" >
 			<bean class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -42,15 +62,6 @@
 		</constructor-arg>
 	</bean>
     
-	<bean id="gameDataSource" class="com.lingyu.dntg.dao.base.dynamicDataSource.GameDataSource" init-method="init">
-		<property name="maxActive" value="10" />
-		<property name="initialSize" value="1" />
-		<property name="maxWait" value="60000" />
-		<property name="minIdle" value="1" />
-		<property name="targetDataSources">    
-			<map key-type="java.lang.String" />
-		</property> 
-	</bean>
 	<bean id="gameSqlSession" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" >
             <bean class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -65,15 +76,6 @@
         </constructor-arg>
     </bean>
     
-	<bean id="logDataSource" class="com.lingyu.dntg.dao.base.dynamicDataSource.LogDataSource" init-method="init">
-		<property name="maxActive" value="10" />
-		<property name="initialSize" value="1" />
-		<property name="maxWait" value="60000" />
-		<property name="minIdle" value="1" />
-		<property name="targetDataSources">    
-			<map key-type="java.lang.String" />
-		</property> 
-	</bean>
     <bean id="logSqlSession" class="org.mybatis.spring.SqlSessionTemplate">
         <constructor-arg index="0" >
             <bean class="org.mybatis.spring.SqlSessionFactoryBean">
