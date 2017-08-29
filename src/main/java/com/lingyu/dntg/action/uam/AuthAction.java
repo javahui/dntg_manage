@@ -2,6 +2,7 @@ package com.lingyu.dntg.action.uam;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
@@ -132,15 +133,12 @@ public class AuthAction extends AbstractAction{
 	 */
 	private void clearCookie(HttpServletRequest request,HttpServletResponse response){
 		Cookie[] cookies = request.getCookies();
-		if(cookies != null){
-			for (Cookie cookie : cookies) {
-				String name = cookie.getName();
-				if("loginName".equals(name) || "password".equals(name)){
-					cookie.setMaxAge(0);
-					response.addCookie(cookie);
-				}
-			}
-		}
+		Stream.of(cookies)
+			.filter(c -> StringUtils.equalsAny(c.getName(), "loginName", "password"))
+			.forEach(c -> {
+				c.setMaxAge(0);
+				response.addCookie(c);
+			});
 	}
 	
 }
